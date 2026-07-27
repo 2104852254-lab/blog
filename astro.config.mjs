@@ -62,11 +62,14 @@ const adapter = process.env.CF_WORKERS
 		})
 	: undefined;
 
+// GitHub Pages 的项目地址包含 /blog；Vercel 的站点部署在根路径。
+const isGitHubPagesBuild = process.env.DEPLOY_TARGET === "github-pages";
+
 // https://astro.build/config
 export default defineConfig({
 	site: siteConfig.site_url,
 
-	base: "/",
+	base: isGitHubPagesBuild ? "/blog" : "/",
 	trailingSlash: "always",
 
 	// 字体配置 - 只加载实际使用的字体，跳过未引用的以加快构建

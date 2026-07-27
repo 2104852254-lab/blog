@@ -4,6 +4,12 @@ import type { SiteConfig } from "@/types/siteConfig";
 // 语言代码，例如：'zh_CN', 'zh_TW', 'en', 'ja', 'ru', 'ko'。
 const SITE_LANG = "zh_CN";
 
+// 同一份源码同时发布到两个平台：GitHub Pages 在 /blog/ 子路径下，Vercel 在根路径下。
+const IS_GITHUB_PAGES = process.env.DEPLOY_TARGET === "github-pages";
+const SITE_URL = IS_GITHUB_PAGES
+	? "https://2104852254-lab.github.io/blog"
+	: "https://blog-seven-tau-84.vercel.app";
+
 export const siteConfig: SiteConfig = {
 	// 站点标题
 	title: "余烬书库",
@@ -12,7 +18,7 @@ export const siteConfig: SiteConfig = {
 	subtitle: "Ashen Chronicle",
 
 	// 站点 URL
-	site_url: "https://blog-seven-tau-84.vercel.app",
+	site_url: SITE_URL,
 
 	// 站点描述
 	description:
