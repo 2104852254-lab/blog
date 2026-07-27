@@ -12,7 +12,7 @@ export const siteConfig: SiteConfig = {
 	subtitle: "Ashen Chronicle",
 
 	// 站点 URL
-	site_url: "http://localhost:4321",
+	site_url: "https://blog-seven-tau-84.vercel.app",
 
 	// 站点描述
 	description:
