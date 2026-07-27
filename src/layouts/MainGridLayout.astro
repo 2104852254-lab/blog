@@ -45,6 +45,7 @@ import "@/styles/expressive-code.css";
 
 interface Props {
 	title?: string;
+	pageSubtitle?: string;
 	banner?: string;
 	description?: string;
 	lang?: string;
@@ -64,9 +65,13 @@ interface Props {
 }
 
 const backgroundImages = getBackgroundImages();
+const lightBackgroundImages = backgroundWallpaper.lightSrc
+	? getBackgroundImages(backgroundWallpaper.lightSrc)
+	: null;
 
 const {
 	title,
+	pageSubtitle,
 	banner,
 	description,
 	lang,
@@ -427,6 +432,41 @@ const hasMultipleImages =
     </div>
     )}
 
+    {lightBackgroundImages && (
+    <div id="light-banner-images-container" class="absolute inset-0 h-full w-full overflow-hidden pointer-events-none" aria-hidden="true">
+        {lightBackgroundImages.mobile.length > 0 && (
+            <div class="absolute inset-0 block lg:hidden">
+                <ImageWrapper
+                    alt="Mobile light background image of the blog"
+                    class="object-cover h-full w-full"
+                    src={lightBackgroundImages.mobile[0]}
+                    position={backgroundWallpaper.banner?.position}
+                    widths={[640, 1080]}
+                    sizes="100vw"
+                    loading="eager"
+                    fetchpriority="high"
+                    quality={mobileQuality}
+                />
+            </div>
+        )}
+        {lightBackgroundImages.desktop.length > 0 && (
+            <div class="absolute inset-0 hidden lg:block">
+                <ImageWrapper
+                    alt="Desktop light background image of the blog"
+                    class="object-cover h-full w-full"
+                    src={lightBackgroundImages.desktop[0]}
+                    position={backgroundWallpaper.banner?.position}
+                    widths={[1280, 1920]}
+                    sizes="100vw"
+                    loading="eager"
+                    fetchpriority="high"
+                    quality={configQuality}
+                />
+            </div>
+        )}
+    </div>
+    )}
+
     <!-- 壁纸轮播脚本（基于 CSS transition） -->
     {hasMultipleImages && (
     <script is:inline data-swup-ignore-script>
@@ -680,9 +720,14 @@ const hasMultipleImages =
     {showBannerPageTitle && (
         <div class="banner-page-title-overlay absolute inset-0 z-20 hidden lg:flex items-center justify-center pointer-events-none">
             <div class="w-4/5 lg:w-3/4 text-center mb-0">
-                <div class="banner-page-title font-bold text-white leading-tight inline-flex items-center justify-center gap-3">
-                    {/* <Icon is:inline name="material-symbols:bookmark-rounded" class="banner-page-title-icon" /> */}
-                    <span class="banner-page-title-text">{title}</span>
+                <div class="flex flex-col items-center">
+                    <div class="banner-page-title font-bold text-white leading-tight inline-flex items-center justify-center gap-3">
+                        {/* <Icon is:inline name="material-symbols:bookmark-rounded" class="banner-page-title-icon" /> */}
+                        <span class="banner-page-title-text">{title}</span>
+                    </div>
+                    {pageSubtitle && (
+                        <div class="banner-page-subtitle">{pageSubtitle}</div>
+                    )}
                 </div>
             </div>
         </div>

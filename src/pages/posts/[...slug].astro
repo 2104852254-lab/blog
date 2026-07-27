@@ -59,6 +59,12 @@ const bannerPostMeta = {
 // 处理随机图：如果image为"api"，则从配置的API获取随机图
 const processedImage = processCoverImageSync(entry.data.image, entry.id);
 const apiUrls = getApiUrlList(entry.data.image, entry.id);
+const processedLightImage = entry.data.lightImage
+	? processCoverImageSync(entry.data.lightImage, entry.id)
+	: "";
+const lightApiUrls = entry.data.lightImage
+	? getApiUrlList(entry.data.lightImage, entry.id)
+	: [];
 const showPostCover = Boolean(processedImage && coverImageConfig.enableInPost);
 const usePostCoverOverlay =
 	showPostCover && (coverImageConfig.enableInPostOverlay ?? true);
@@ -141,14 +147,34 @@ const relatedPosts = await getRelatedPosts(entry, 5);
       {
         usePostCoverOverlay && processedImage && (
           <div class="-mx-6 md:-mx-9 -mt-6 mb-6 h-48 md:h-64 relative onload-animation">
-            <CoverImage
-              id="post-cover"
-              src={processedImage}
-              basePath={getFileDirFromPath(entry.filePath || "")}
-              class="h-full"
-              preview={false}
-              apiUrls={apiUrls}
-            />
+            <div
+              class:list={[
+                "post-page-theme-cover",
+                "post-page-dark-cover",
+                "absolute inset-0 overflow-hidden",
+                processedLightImage && "has-light-cover",
+              ]}
+            >
+              <CoverImage
+                id="post-cover"
+                src={processedImage}
+                basePath={getFileDirFromPath(entry.filePath || "")}
+                class="h-full"
+                preview={false}
+                apiUrls={apiUrls}
+              />
+            </div>
+            {processedLightImage && (
+              <div class="post-page-theme-cover post-page-light-cover absolute inset-0 overflow-hidden">
+                <CoverImage
+                  src={processedLightImage}
+                  basePath={getFileDirFromPath(entry.filePath || "")}
+                  class="h-full"
+                  preview={false}
+                  apiUrls={lightApiUrls}
+                />
+              </div>
+            )}
             <div class="absolute inset-x-4 top-3 z-10 flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-xs font-medium text-white drop-shadow-[0_1px_2px_rgb(0_0_0/0.9)]">
               <div class="flex items-center gap-1 whitespace-nowrap">
                 <Icon is:inline name="material-symbols:notes-rounded" class="text-base" />
@@ -288,15 +314,34 @@ const relatedPosts = await getRelatedPosts(entry, 5);
 
       {
         showPostCover && !usePostCoverOverlay && processedImage && (
-          <div class="mt-4">
-            <CoverImage
-              id="post-cover"
-              src={processedImage}
-              basePath={getFileDirFromPath(entry.filePath || "")}
-              class="mb-8 rounded-xl banner-container onload-animation"
-              preview={false}
-              apiUrls={apiUrls}
-            />
+          <div class="mt-4 relative">
+            <div
+              class:list={[
+                "post-page-theme-cover",
+                "post-page-dark-cover",
+                processedLightImage && "has-light-cover",
+              ]}
+            >
+              <CoverImage
+                id="post-cover"
+                src={processedImage}
+                basePath={getFileDirFromPath(entry.filePath || "")}
+                class="mb-8 rounded-xl banner-container onload-animation"
+                preview={false}
+                apiUrls={apiUrls}
+              />
+            </div>
+            {processedLightImage && (
+              <div class="post-page-theme-cover post-page-light-cover absolute inset-0 overflow-hidden">
+                <CoverImage
+                  src={processedLightImage}
+                  basePath={getFileDirFromPath(entry.filePath || "")}
+                  class="mb-8 rounded-xl banner-container onload-animation"
+                  preview={false}
+                  apiUrls={lightApiUrls}
+                />
+              </div>
+            )}
           </div>
         )
       }

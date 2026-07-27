@@ -10,6 +10,7 @@ interface Props {
 }
 const { style } = Astro.props;
 const className = Astro.props.class;
+const hasLightAvatar = Boolean(profileConfig.lightAvatar);
 ---
 
 <div class:list={["card-base", "p-3", className]} style={style}>
@@ -28,15 +29,34 @@ const className = Astro.props.class;
         class="transition opacity-0 scale-90 group-hover:scale-100 group-hover:opacity-100 text-white text-5xl"
       />
     </div>
+    <!-- 暗色图片保留在正常布局中，用于撑开简介卡的图片高度。 -->
     <ImageWrapper
       src={profileConfig.avatar || ""}
       alt="Profile Image of the Author"
-      class="profile-avatar-image mx-auto lg:w-full h-full lg:mt-0"
+      class:list={[
+        "profile-avatar-image",
+        "profile-avatar-theme-cover",
+        "profile-avatar-dark-cover",
+        "mx-auto lg:w-full h-full lg:mt-0",
+        hasLightAvatar && "has-light-avatar",
+      ]}
       loading="eager"
       fetchpriority="high"
       widths={[350]}
       sizes="350px"
     />
+    <!-- 亮色图片叠在暗色图片上方，由主题 CSS 决定显示哪一张。 -->
+    {hasLightAvatar && (
+      <ImageWrapper
+        src={profileConfig.lightAvatar || ""}
+        alt="Profile Image of the Author"
+        class="profile-avatar-image profile-avatar-theme-cover profile-avatar-light-cover absolute inset-0 mx-auto lg:w-full h-full lg:mt-0"
+        loading="eager"
+        fetchpriority="high"
+        widths={[350]}
+        sizes="350px"
+      />
+    )}
   </a>
   <div class="px-2">
     <div

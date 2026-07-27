@@ -1,0 +1,706 @@
+/*
+ * Ashen Chronicle
+ * An original dark-medieval skin built on Firefly's existing layout.
+ */
+
+:root.theme-ashen.dark {
+	color-scheme: dark;
+	--hue: 45;
+	--radius-large: 0.25rem;
+	--primary: #c79a4b;
+	--page-bg: #080806;
+	--card-bg: #12110e;
+	--card-bg-transparent: rgb(15 14 11 / var(--card-transparent-opacity, 0.9));
+	--btn-content: #d3aa62;
+	--btn-regular-bg: #211d16;
+	--btn-regular-bg-hover: #30271a;
+	--btn-regular-bg-active: #3c2c19;
+	--btn-plain-bg-hover: rgb(184 132 57 / 0.12);
+	--btn-plain-bg-active: rgb(198 106 50 / 0.18);
+	--btn-card-bg-hover: #19160f;
+	--btn-card-bg-active: #241d12;
+	--enter-btn-bg: #1c1812;
+	--enter-btn-bg-hover: #2b2115;
+	--enter-btn-bg-active: #382718;
+	--deep-text: #ded4c0;
+	--title-active: #e0aa55;
+	--line-divider: rgb(194 158 88 / 0.24);
+	--line-color: rgb(194 158 88 / 0.3);
+	--meta-divider: rgb(194 158 88 / 0.38);
+	--content-meta: rgb(218 205 181 / 0.62);
+	--inline-code-bg: #1e1a14;
+	--inline-code-color: #d9ad63;
+	--muted: #181712;
+	--selection-bg: rgb(179 103 48 / 0.42);
+	--codeblock-bg: #090a09;
+	--codeblock-topbar-bg: #17140f;
+	--license-block-bg: #0e0e0b;
+	--link-underline: rgb(199 154 75 / 0.45);
+	--link-hover: rgb(224 170 85 / 0.2);
+	--link-active: rgb(198 106 50 / 0.25);
+	--float-panel-bg: #11100d;
+	--toc-badge-bg: #211d16;
+	--toc-btn-hover: #2b2115;
+	--toc-btn-active: #382718;
+	--toc-indicator-bg: #211d16;
+	--toc-item-active: #d3aa62;
+	--scrollbar-bg: rgb(183 139 72 / 0.35);
+	--scrollbar-bg-hover: rgb(205 158 82 / 0.5);
+	--scrollbar-bg-active: rgb(220 166 83 / 0.7);
+}
+
+:root.theme-ashen.dark {
+	background: #080806;
+}
+
+.theme-ashen body {
+	background:
+		radial-gradient(circle at 50% 0%, rgb(133 73 33 / 0.11), transparent 32rem),
+		linear-gradient(180deg, #090906 0%, #080806 46%, #050504 100%);
+	color: #cfc5b2;
+	font-family:
+		Inter, "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+}
+
+.theme-ashen body::before,
+.theme-ashen body::after {
+	content: "";
+	position: fixed;
+	inset: 0;
+	z-index: 9999;
+	pointer-events: none;
+}
+
+.theme-ashen body::before {
+	opacity: 0.13;
+	background-image:
+		linear-gradient(90deg, transparent 49%, rgb(255 255 255 / 0.025) 50%, transparent 51%),
+		linear-gradient(0deg, transparent 49%, rgb(255 255 255 / 0.018) 50%, transparent 51%);
+	background-size: 4px 4px;
+	mix-blend-mode: soft-light;
+}
+
+.theme-ashen body::after {
+	z-index: 20;
+	opacity: 0.22;
+	background-image:
+		radial-gradient(circle, #dd7a37 0 1px, transparent 1.5px),
+		radial-gradient(circle, #a94d25 0 0.8px, transparent 1.3px),
+		radial-gradient(circle, rgb(231 179 95 / 0.8) 0 0.7px, transparent 1.2px);
+	background-position:
+		17px 30px,
+		87px 160px,
+		142px 80px;
+	background-size:
+		180px 240px,
+		230px 310px,
+		290px 370px;
+	animation: ashen-drift 24s linear infinite;
+}
+
+@keyframes ashen-drift {
+	to {
+		background-position:
+			57px -210px,
+			127px -150px,
+			182px -290px;
+	}
+}
+
+.theme-ashen h1,
+.theme-ashen h2,
+.theme-ashen h3,
+.theme-ashen h4,
+.theme-ashen h5,
+.theme-ashen h6,
+.theme-ashen .post-card-title,
+.theme-ashen .widget-title,
+.theme-ashen .banner-title,
+.theme-ashen #navbar .font-bold {
+	font-family: Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", SimSun, serif;
+	font-weight: 600;
+	letter-spacing: 0.045em;
+}
+
+.theme-ashen ::selection {
+	background: var(--selection-bg);
+	color: #fff4dc;
+}
+
+.theme-ashen #display-settings-switch,
+.theme-ashen #display-setting {
+	display: none !important;
+}
+
+.theme-ashen .card-base,
+.theme-ashen .card-base-transparent,
+.theme-ashen .btn-card,
+.theme-ashen .float-panel,
+.theme-ashen .dropdown-content {
+	border-radius: var(--radius-large) !important;
+	border: 1px solid var(--line-divider);
+	background:
+		linear-gradient(145deg, rgb(255 255 255 / 0.025), transparent 38%),
+		var(--card-bg);
+	box-shadow:
+		inset 0 1px 0 rgb(255 232 187 / 0.035),
+		inset 0 0 28px rgb(0 0 0 / 0.28),
+		0 10px 30px rgb(0 0 0 / 0.28);
+}
+
+.theme-ashen .btn-plain,
+.theme-ashen .btn-regular,
+.theme-ashen .post-card-image,
+.theme-ashen .post-card-enter-btn,
+.theme-ashen .post-card-bottom-tags a {
+	border-radius: 0.2rem !important;
+}
+
+.theme-ashen .btn-regular {
+	border: 1px solid rgb(194 158 88 / 0.2);
+}
+
+.theme-ashen a:focus-visible,
+.theme-ashen button:focus-visible {
+	outline: 2px solid #e0aa55;
+	outline-offset: 3px;
+}
+
+.theme-ashen #navbar > div,
+.theme-ashen body:has(#wallpaper-wrapper) #navbar[data-transparent-mode] > div {
+	border-color: rgb(205 158 82 / 0.24) !important;
+	border-bottom-width: 1px !important;
+	background:
+		linear-gradient(180deg, rgb(24 21 15 / 0.96), rgb(10 10 8 / 0.92)) !important;
+	box-shadow:
+		0 1px 0 rgb(255 221 159 / 0.04),
+		0 8px 28px rgb(0 0 0 / 0.46) !important;
+	backdrop-filter: none !important;
+}
+
+.theme-ashen #navbar a,
+.theme-ashen #navbar button {
+	text-shadow: 0 1px 1px #000;
+}
+
+.theme-ashen #wallpaper-wrapper {
+	border-bottom: 1px solid rgb(199 154 75 / 0.32);
+	box-shadow:
+		inset 0 -45px 90px rgb(0 0 0 / 0.52),
+		0 12px 45px rgb(0 0 0 / 0.58);
+}
+
+.theme-ashen #banner-images-container img,
+.theme-ashen #banner img,
+.theme-ashen .slide-item img {
+	filter: saturate(0.62) contrast(1.16) brightness(0.72) sepia(0.1);
+}
+
+.theme-ashen .banner-dim-overlay {
+	background:
+		radial-gradient(circle at 48% 30%, transparent 0 22%, rgb(0 0 0 / 0.34) 60%),
+		linear-gradient(180deg, rgb(0 0 0 / 0.2), rgb(0 0 0 / 0.8)) !important;
+}
+
+.theme-ashen .banner-title {
+	position: relative;
+	display: inline-block;
+	padding: 0.2em 0.7em 0.28em;
+	color: #e6d7bd !important;
+	font-size: clamp(2.7rem, 7vw, var(--banner-title-size, 4.25rem)) !important;
+	letter-spacing: 0.18em;
+	text-indent: 0.18em;
+	text-shadow:
+		0 2px 2px #000,
+		0 0 22px rgb(213 121 48 / 0.35);
+}
+
+.theme-ashen .banner-title::before,
+.theme-ashen .banner-title::after {
+	content: "";
+	position: absolute;
+	left: 5%;
+	right: 5%;
+	height: 1px;
+	background: linear-gradient(90deg, transparent, #b89452, transparent);
+	box-shadow: 0 0 8px rgb(217 124 51 / 0.4);
+}
+
+.theme-ashen .banner-title::before {
+	top: 0;
+}
+
+.theme-ashen .banner-title::after {
+	bottom: 0;
+}
+
+.theme-ashen .banner-subtitle {
+	margin-top: 0.9rem;
+	color: rgb(224 213 193 / 0.82) !important;
+	letter-spacing: 0.23em;
+	text-shadow: 0 2px 4px #000;
+}
+
+.theme-ashen .wallpaper-gradient {
+	background: linear-gradient(to bottom, transparent, var(--page-bg)) !important;
+}
+
+.theme-ashen .post-card-wrapper {
+	position: relative;
+	transition:
+		border-color 180ms ease,
+		box-shadow 180ms ease,
+		transform 180ms ease;
+}
+
+.theme-ashen .post-card-wrapper::after {
+	content: "";
+	position: absolute;
+	inset: 0 auto 0 0;
+	width: 2px;
+	background: linear-gradient(180deg, transparent, #c66a32, #b89452, transparent);
+	opacity: 0.55;
+	box-shadow: 0 0 14px rgb(198 106 50 / 0.28);
+}
+
+.theme-ashen .post-card-wrapper:hover {
+	border-color: rgb(214 169 88 / 0.5);
+	box-shadow:
+		inset 0 0 35px rgb(159 76 29 / 0.08),
+		0 14px 34px rgb(0 0 0 / 0.42);
+	transform: translateY(-2px);
+}
+
+.theme-ashen .post-card-title {
+	color: #e2d7c3;
+}
+
+.theme-ashen .post-card-title::before {
+	width: 2px !important;
+	border-radius: 0 !important;
+	background: linear-gradient(#e2b366, #9e542c) !important;
+	box-shadow: 0 0 9px rgb(198 106 50 / 0.5);
+}
+
+.theme-ashen .post-card-image img,
+.theme-ashen .profile-avatar-image img {
+	filter: saturate(0.52) contrast(1.1) brightness(0.72);
+	transition:
+		filter 260ms ease,
+		transform 260ms ease;
+}
+
+.theme-ashen .post-card-image:hover img,
+.theme-ashen .profile-avatar-image:hover img {
+	filter: saturate(0.75) contrast(1.12) brightness(0.84);
+}
+
+.theme-ashen .profile-avatar-image {
+	height: 9rem !important;
+	border: 1px solid rgb(194 158 88 / 0.3);
+	border-radius: 0.2rem !important;
+	box-shadow: inset 0 0 24px #000;
+}
+
+.theme-ashen .profile-avatar-image img {
+	object-position: 54% 56% !important;
+}
+
+.theme-ashen widget-layout > .widget-title,
+.theme-ashen .widget-title {
+	color: #d9cdb8 !important;
+	letter-spacing: 0.08em;
+}
+
+.theme-ashen .widget-title::before {
+	width: 2px !important;
+	border-radius: 0 !important;
+	background: #b89452 !important;
+	box-shadow: 0 0 8px rgb(198 106 50 / 0.45);
+}
+
+.theme-ashen .custom-md {
+	color: #cfc6b4;
+}
+
+.theme-ashen .custom-md h1,
+.theme-ashen .custom-md h2,
+.theme-ashen .custom-md h3 {
+	color: #e1d5bf;
+	border-color: rgb(194 158 88 / 0.24);
+}
+
+.theme-ashen .custom-md h2 {
+	padding-bottom: 0.42em;
+	border-bottom: 1px solid rgb(194 158 88 / 0.24);
+}
+
+.theme-ashen .custom-md blockquote {
+	border-left: 2px solid #b89452;
+	background: linear-gradient(90deg, rgb(184 148 82 / 0.1), transparent);
+	color: #bfb29d;
+}
+
+.theme-ashen .custom-md table {
+	border: 1px solid var(--line-divider);
+}
+
+.theme-ashen .custom-md th {
+	background: #1a1711;
+	color: #ddcfb7;
+}
+
+.theme-ashen .custom-md td,
+.theme-ashen .custom-md th {
+	border-color: var(--line-divider);
+}
+
+.theme-ashen .footer {
+	color: rgb(204 191 168 / 0.62);
+	text-shadow: 0 1px 2px #000;
+}
+
+.theme-ashen .footer::before {
+	content: "";
+	display: block;
+	width: min(34rem, 76vw);
+	height: 1px;
+	margin: 0 auto 1.5rem;
+	background: linear-gradient(90deg, transparent, rgb(194 158 88 / 0.42), transparent);
+}
+
+/*
+ * Frosted Cathedral
+ * An original ice-moon counterpart for the light theme.
+ */
+
+:root.theme-ashen:not(.dark) {
+	color-scheme: light;
+	--hue: 215 !important;
+	--radius-large: 0.32rem;
+	--primary: #436f9c;
+	--page-bg: #edf4fb;
+	--card-bg: #fbfdff;
+	--card-bg-transparent: rgb(250 253 255 / var(--card-transparent-opacity, 0.92));
+	--btn-content: #385f87;
+	--btn-regular-bg: #e7f0f9;
+	--btn-regular-bg-hover: #dceaf7;
+	--btn-regular-bg-active: #cfdfef;
+	--btn-plain-bg-hover: rgb(63 112 157 / 0.1);
+	--btn-plain-bg-active: rgb(63 112 157 / 0.17);
+	--btn-card-bg-hover: #f1f7fc;
+	--btn-card-bg-active: #e2edf7;
+	--enter-btn-bg: #e6f0f9;
+	--enter-btn-bg-hover: #d8e8f6;
+	--enter-btn-bg-active: #cbdff0;
+	--deep-text: #233950;
+	--title-active: #2b668f;
+	--line-divider: rgb(70 108 145 / 0.25);
+	--line-color: rgb(70 108 145 / 0.32);
+	--meta-divider: rgb(70 108 145 / 0.38);
+	--content-meta: rgb(49 74 101 / 0.66);
+	--inline-code-bg: #e7f0f8;
+	--inline-code-color: #315f89;
+	--muted: #e5eef7;
+	--selection-bg: rgb(152 191 225 / 0.55);
+	--codeblock-bg: #f1f6fb;
+	--codeblock-topbar-bg: #e0ebf5;
+	--license-block-bg: #f4f8fc;
+	--link-underline: rgb(67 111 156 / 0.45);
+	--link-hover: rgb(67 111 156 / 0.13);
+	--link-active: rgb(51 102 145 / 0.2);
+	--float-panel-bg: #f9fcff;
+	--toc-badge-bg: #e6f0f9;
+	--toc-btn-hover: #dceaf7;
+	--toc-btn-active: #cbdff0;
+	--toc-indicator-bg: #e1edf8;
+	--toc-item-active: #2d638d;
+	--scrollbar-bg: rgb(87 132 174 / 0.35);
+	--scrollbar-bg-hover: rgb(87 132 174 / 0.5);
+	--scrollbar-bg-active: rgb(66 111 154 / 0.7);
+	background: #edf4fb;
+}
+
+.theme-ashen:not(.dark) body {
+	background:
+		radial-gradient(circle at 18% 0%, rgb(255 255 255 / 0.92), transparent 30rem),
+		radial-gradient(circle at 82% 16%, rgb(183 210 235 / 0.38), transparent 38rem),
+		linear-gradient(180deg, #f8fbff 0%, #edf4fb 46%, #e4edf6 100%);
+	color: #263d55;
+}
+
+.theme-ashen:not(.dark) body::before {
+	opacity: 0.18;
+	background-image:
+		linear-gradient(90deg, transparent 49%, rgb(82 123 163 / 0.05) 50%, transparent 51%),
+		linear-gradient(0deg, transparent 49%, rgb(82 123 163 / 0.035) 50%, transparent 51%);
+	mix-blend-mode: normal;
+}
+
+.theme-ashen:not(.dark) body::after {
+	opacity: 0.3;
+	background-image:
+		radial-gradient(circle, rgb(255 255 255 / 0.94) 0 1px, transparent 1.7px),
+		radial-gradient(circle, rgb(168 198 225 / 0.76) 0 0.75px, transparent 1.3px),
+		radial-gradient(circle, rgb(217 231 244 / 0.9) 0 0.8px, transparent 1.35px);
+	background-position:
+		23px 34px,
+		109px 148px,
+		168px 78px;
+	background-size:
+		194px 258px,
+		248px 332px,
+		316px 392px;
+	animation: frost-drift 30s linear infinite;
+}
+
+@keyframes frost-drift {
+	to {
+		background-position:
+			-24px 284px,
+			64px 342px,
+			112px 362px;
+	}
+}
+
+.theme-ashen:not(.dark) ::selection {
+	color: #17334e;
+}
+
+.theme-ashen:not(.dark) a:focus-visible,
+.theme-ashen:not(.dark) button:focus-visible {
+	outline-color: #3c709d;
+}
+
+.theme-ashen:not(.dark) .card-base,
+.theme-ashen:not(.dark) .card-base-transparent,
+.theme-ashen:not(.dark) .btn-card,
+.theme-ashen:not(.dark) .float-panel,
+.theme-ashen:not(.dark) .dropdown-content {
+	border-color: rgb(72 112 150 / 0.26);
+	background:
+		linear-gradient(145deg, rgb(255 255 255 / 0.95), rgb(235 244 252 / 0.72) 100%),
+		var(--card-bg);
+	box-shadow:
+		inset 0 1px 0 rgb(255 255 255 / 0.92),
+		inset 0 0 24px rgb(160 190 218 / 0.09),
+		0 10px 28px rgb(72 104 137 / 0.13);
+}
+
+.theme-ashen:not(.dark) .btn-regular {
+	border-color: rgb(72 112 150 / 0.24);
+}
+
+.theme-ashen:not(.dark) #navbar > div,
+.theme-ashen:not(.dark) body:has(#wallpaper-wrapper) #navbar[data-transparent-mode] > div {
+	border-color: rgb(72 112 150 / 0.24) !important;
+	background:
+		linear-gradient(180deg, rgb(251 254 255 / 0.92), rgb(229 239 248 / 0.88)) !important;
+	box-shadow:
+		0 1px 0 rgb(255 255 255 / 0.94),
+		0 8px 28px rgb(58 91 124 / 0.16) !important;
+	backdrop-filter: blur(14px) saturate(1.08) !important;
+}
+
+.theme-ashen:not(.dark) #navbar a,
+.theme-ashen:not(.dark) #navbar button {
+	text-shadow: 0 1px 0 rgb(255 255 255 / 0.86);
+}
+
+.theme-ashen.dark #light-banner-images-container {
+	opacity: 0;
+	visibility: hidden;
+}
+
+.theme-ashen:not(.dark) #banner-images-container {
+	opacity: 0;
+	visibility: hidden;
+}
+
+.theme-ashen:not(.dark) #light-banner-images-container {
+	z-index: 6;
+	opacity: 1;
+	visibility: visible;
+	transition: opacity 260ms ease, visibility 260ms ease;
+}
+
+.theme-ashen:not(.dark) #light-banner-images-container img {
+	filter: saturate(0.88) contrast(1.04) brightness(0.98);
+}
+
+.theme-ashen:not(.dark) #wallpaper-wrapper {
+	border-bottom-color: rgb(78 121 163 / 0.35);
+	box-shadow:
+		inset 0 -38px 80px rgb(102 139 177 / 0.2),
+		0 12px 38px rgb(68 98 130 / 0.2);
+}
+
+.theme-ashen:not(.dark) .banner-dim-overlay {
+	background:
+		radial-gradient(circle at 50% 24%, rgb(255 255 255 / 0.1), rgb(83 122 162 / 0.12) 76%),
+		linear-gradient(180deg, rgb(255 255 255 / 0.06), rgb(226 238 248 / 0.38)) !important;
+}
+
+.theme-ashen:not(.dark) .banner-title {
+	color: #1f4668 !important;
+	text-shadow:
+		0 1px 0 rgb(255 255 255 / 0.94),
+		0 0 22px rgb(213 232 247 / 0.86);
+}
+
+.theme-ashen:not(.dark) .banner-title::before,
+.theme-ashen:not(.dark) .banner-title::after {
+	background: linear-gradient(90deg, transparent, #7199bf, transparent);
+	box-shadow: 0 0 8px rgb(118 160 199 / 0.42);
+}
+
+.theme-ashen:not(.dark) .banner-subtitle {
+	color: rgb(33 69 102 / 0.82) !important;
+	text-shadow: 0 1px 0 rgb(255 255 255 / 0.9);
+}
+
+.theme-ashen:not(.dark) .wallpaper-gradient {
+	background: linear-gradient(to bottom, transparent, var(--page-bg)) !important;
+}
+
+.theme-ashen:not(.dark) .post-card-wrapper::after {
+	background: linear-gradient(180deg, transparent, #6f9ec7, #d8eafa, transparent);
+	opacity: 0.72;
+	box-shadow: 0 0 14px rgb(101 149 193 / 0.28);
+}
+
+.theme-ashen:not(.dark) .post-card-wrapper:hover {
+	border-color: rgb(77 122 164 / 0.55);
+	box-shadow:
+		inset 0 0 35px rgb(143 184 218 / 0.11),
+		0 14px 34px rgb(65 96 127 / 0.18);
+}
+
+.theme-ashen:not(.dark) .post-card-title {
+	color: #234866;
+}
+
+.theme-ashen:not(.dark) .post-card-title::before {
+	background: linear-gradient(#8bb4d8, #477aa8) !important;
+	box-shadow: 0 0 9px rgb(90 143 189 / 0.38);
+}
+
+.theme-ashen .post-card-theme-cover {
+	transition: opacity 260ms ease, visibility 260ms ease;
+}
+
+.theme-ashen.dark .post-card-light-cover,
+.theme-ashen.dark .post-page-light-cover,
+.theme-ashen:not(.dark) .post-card-dark-cover.has-light-cover,
+.theme-ashen:not(.dark) .post-page-dark-cover.has-light-cover {
+	opacity: 0;
+	visibility: hidden;
+}
+
+.theme-ashen .post-page-theme-cover {
+	transition: opacity 260ms ease, visibility 260ms ease;
+}
+
+.theme-ashen .profile-avatar-theme-cover {
+	transition: opacity 260ms ease, visibility 260ms ease;
+}
+
+/* ImageWrapper 默认带有 relative；亮色图需要强制绝对定位，才能覆盖在暗色图上。 */
+.theme-ashen .profile-avatar-light-cover {
+	position: absolute !important;
+	inset: 0;
+}
+
+/* 简介卡有 lightAvatar 时，随网站的亮/暗主题交叉显示两张图片。 */
+.theme-ashen.dark .profile-avatar-light-cover,
+.theme-ashen:not(.dark) .profile-avatar-dark-cover.has-light-avatar {
+	opacity: 0;
+	visibility: hidden;
+}
+
+.theme-ashen:not(.dark) .post-card-image img,
+.theme-ashen:not(.dark) .profile-avatar-image img {
+	filter: saturate(0.72) contrast(1.06) brightness(0.94);
+}
+
+.theme-ashen:not(.dark) .post-card-image:hover img,
+.theme-ashen:not(.dark) .profile-avatar-image:hover img {
+	filter: saturate(0.84) contrast(1.08) brightness(1);
+}
+
+.theme-ashen:not(.dark) .profile-avatar-image {
+	border-color: rgb(91 139 182 / 0.34);
+	box-shadow: inset 0 0 24px rgb(55 88 121 / 0.2), 0 8px 20px rgb(77 111 146 / 0.14);
+}
+
+.theme-ashen:not(.dark) widget-layout > .widget-title,
+.theme-ashen:not(.dark) .widget-title {
+	color: #2b526f !important;
+}
+
+.theme-ashen:not(.dark) .widget-title::before {
+	background: #719bc0 !important;
+	box-shadow: 0 0 8px rgb(105 153 196 / 0.36);
+}
+
+.theme-ashen:not(.dark) .custom-md {
+	color: #2d455e;
+}
+
+.theme-ashen:not(.dark) .custom-md h1,
+.theme-ashen:not(.dark) .custom-md h2,
+.theme-ashen:not(.dark) .custom-md h3 {
+	color: #274d6c;
+	border-color: rgb(73 116 154 / 0.25);
+}
+
+.theme-ashen:not(.dark) .custom-md h2 {
+	border-bottom-color: rgb(73 116 154 / 0.25);
+}
+
+.theme-ashen:not(.dark) .custom-md blockquote {
+	border-left-color: #6f9bc2;
+	background: linear-gradient(90deg, rgb(138 181 218 / 0.15), transparent);
+	color: #526b85;
+}
+
+.theme-ashen:not(.dark) .custom-md th {
+	background: #e2eef8;
+	color: #2d5474;
+}
+
+.theme-ashen:not(.dark) .footer {
+	color: rgb(50 77 104 / 0.7);
+	text-shadow: 0 1px 0 rgb(255 255 255 / 0.9);
+}
+
+.theme-ashen:not(.dark) .footer::before {
+	background: linear-gradient(90deg, transparent, rgb(104 148 188 / 0.46), transparent);
+}
+
+@media (max-width: 768px) {
+	.theme-ashen .banner-title {
+		letter-spacing: 0.1em;
+		text-indent: 0.1em;
+	}
+
+	.theme-ashen .banner-subtitle {
+		padding-inline: 1rem;
+		font-size: 0.88rem !important;
+		letter-spacing: 0.12em;
+	}
+
+	.theme-ashen .post-card-wrapper:hover {
+		transform: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.theme-ashen body::after {
+		animation: none;
+	}
+
+	.theme-ashen .post-card-wrapper {
+		transition: none;
+	}
+}

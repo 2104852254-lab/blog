@@ -1,29 +1,26 @@
-# 关于我 / About Me
+# 关于余烬书库
 
-你好！我是 **夏叶** ，一个在数字世界中默默无闻的一片叶子。
+你好，我是这座书库的 **守夜人**。
 
-## 🛠️ 关于本站
+余烬书库不是一座急着给出答案的档案馆。它更像旅途中留下的火堆：让零散的经验、没有讲完的故事和偶尔闪过的念头，在这里得到一个可以回来的位置。
 
-这个网站使用 **Astro** 框架构建，采用了 [Firefly](https://github.com/CuteLeaf/Firefly) 模板，Firefly 是基于 [Fuwari](https://github.com/saicaca/fuwari) 的二次开发。
+## 这里会留下什么
 
-**Firefly** 是一款基于 Astro 框架和 Fuwari 模板开发的清新美观且现代化个人博客主题模板，专为技术爱好者和内容创作者设计。该主题融合了现代 Web 技术栈，提供了丰富的功能模块和高度可定制的界面，让您能够轻松打造出专业且美观的个人博客网站。
+这里会记录真实的技术实践、项目中的弯路和排错过程，也会写下值得反复回看的游戏、书籍与作品。偶尔，还会有关于创作、工具、生活和远行的随笔。
 
+我会尽量把复杂的东西讲清楚，也不回避过程里的犹豫和失误。结论当然重要，但走到结论之前的路，往往更值得被保存。
 
-**🖥️在线预览： [Firefly - Demo site](https://firefly.cuteleaf.cn/)**
+## 书库的准则
 
-**🏠我的博客： [https://blog.cuteleaf.cn](https://blog.cuteleaf.cn/)**
+- 只记录自己验证过、愿意负责的经验。
+- 保留失败、修正和不确定之处，不把过程伪装成完美答案。
+- 尊重作品、作者与素材许可，清楚标注引用来源。
+- 让页面安静、清楚，把阅读本身放在最前面。
 
-**📝Firefly使用文档： [https://docs-firefly.cuteleaf.cn](https://docs-firefly.cuteleaf.cn/)**
+## 关于本站
 
-**⭐Firefly开源地址：[https://github.com/CuteLeaf/Firefly](https://github.com/CuteLeaf/Firefly)** 
+这是一座由 Astro 与 Firefly 搭建的个人博客。页面使用原创的余烬与冰月主题：暗色像长夜里的旧石与微火，亮色像雪后清晨的银蓝天光。
 
-**⭐Fuwari开源地址：[https://github.com/saicaca/fuwari](https://github.com/saicaca/fuwari)**
+它会慢慢生长，不追求频繁更新，只希望每一篇留下来的文字，都经得起下一次回望。
 
-::github{repo="CuteLeaf/Firefly"}
-
-::github{repo="saicaca/fuwari"}
-
----
-
-*感谢你的来访！希望在这里能找到对你有用的内容！*
-
+> 愿每一段被认真保存的经验，都能在需要时重新燃起。

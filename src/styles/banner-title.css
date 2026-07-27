@@ -47,6 +47,16 @@
     transition: opacity 0.25s ease;
 }
 
+.banner-page-subtitle {
+    margin-top: 0.7rem;
+    color: rgb(255 255 255 / 0.88);
+    font-size: clamp(0.85rem, 1.4vw, 1.05rem);
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    line-height: 1.7;
+    text-shadow: 0 2px 16px rgb(0 0 0 / 0.6);
+}
+
 .banner-post-description {
     position: relative;
     max-width: min(var(--banner-post-description-width, 50rem), 78vw);

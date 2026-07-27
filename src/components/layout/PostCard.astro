@@ -19,6 +19,7 @@ interface Props {
 	tags: string[];
 	category: string | null;
 	image: string;
+	lightImage?: string;
 	description: string;
 	draft: boolean;
 	pinned?: boolean;
@@ -34,6 +35,7 @@ const {
 	tags,
 	category,
 	image,
+	lightImage = "",
 	description,
 	pinned,
 	password,
@@ -45,10 +47,18 @@ const className = Astro.props.class;
 // 处理随机图：如果image为"api"，则从配置的API获取随机图
 const processedImage = processCoverImageSync(image, entry.id);
 const apiUrls = getApiUrlList(image, entry.id);
+const processedLightImage = lightImage
+	? processCoverImageSync(lightImage, entry.id)
+	: "";
+const lightApiUrls = lightImage ? getApiUrlList(lightImage, entry.id) : [];
 const hasCover =
 	processedImage !== undefined &&
 	processedImage !== null &&
 	processedImage !== "";
+const hasLightCover =
+	processedLightImage !== undefined &&
+	processedLightImage !== null &&
+	processedLightImage !== "";
 
 const coverWidth = "30%";
 
@@ -213,15 +223,37 @@ const minutes = remarkPluginFrontmatter.minutes;
             class="transition opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 text-white text-5xl"
           />
         </div>
-        <CoverImage
-          src={processedImage}
-          basePath={getFileDirFromPath(entry.filePath || "")}
-          alt="Cover Image of the Post"
-          class="w-full h-full transition-transform duration-300 group-hover:scale-110 group-active:scale-115"
-          preview={true}
-          loading={loading}
-          apiUrls={apiUrls}
-        />
+        <div
+          class:list={[
+            "post-card-theme-cover",
+            "post-card-dark-cover",
+            "absolute inset-0 pointer-events-none",
+            hasLightCover && "has-light-cover",
+          ]}
+        >
+          <CoverImage
+            src={processedImage}
+            basePath={getFileDirFromPath(entry.filePath || "")}
+            alt="Cover Image of the Post"
+            class="w-full h-full transition-transform duration-300 group-hover:scale-110 group-active:scale-115"
+            preview={true}
+            loading={loading}
+            apiUrls={apiUrls}
+          />
+        </div>
+        {hasLightCover && (
+          <div class="post-card-theme-cover post-card-light-cover absolute inset-0 pointer-events-none">
+            <CoverImage
+              src={processedLightImage}
+              basePath={getFileDirFromPath(entry.filePath || "")}
+              alt="Light theme cover image of the post"
+              class="w-full h-full transition-transform duration-300 group-hover:scale-110 group-active:scale-115"
+              preview={true}
+              loading={loading}
+              apiUrls={lightApiUrls}
+            />
+          </div>
+        )}
       </a>
     )
   }
