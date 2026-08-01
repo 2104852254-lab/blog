@@ -4,8 +4,15 @@ import type { SiteConfig } from "@/types/siteConfig";
 // 语言代码，例如：'zh_CN', 'zh_TW', 'en', 'ja', 'ru', 'ko'。
 const SITE_LANG = "zh_CN";
 
-// 同一份源码同时发布到两个平台：GitHub Pages 在 /blog/ 子路径下，Vercel 在根路径下。
+// 双平台发布说明：
+// - GitHub Pages 的项目站点地址固定在 /blog/ 子路径下。
+// - Vercel 使用项目域名的根路径。
+// GitHub Actions 构建时会设置 DEPLOY_TARGET=github-pages；
+// 本地预览和 Vercel 构建不设置该变量，因此会使用 Vercel 的网址。
 const IS_GITHUB_PAGES = process.env.DEPLOY_TARGET === "github-pages";
+
+// 根据当前构建平台提供正确的正式地址。
+// RSS、站点地图和文章底部的许可证链接都会使用这个地址。
 const SITE_URL = IS_GITHUB_PAGES
 	? "https://2104852254-lab.github.io/blog"
 	: "https://blog-seven-tau-84.vercel.app";
@@ -17,7 +24,7 @@ export const siteConfig: SiteConfig = {
 	// 站点副标题
 	subtitle: "Ashen Chronicle",
 
-	// 站点 URL
+	// 站点 URL：不要直接填写 localhost；这里会自动选择对应平台的正式地址。
 	site_url: SITE_URL,
 
 	// 站点描述

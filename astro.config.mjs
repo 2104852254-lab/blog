@@ -62,13 +62,16 @@ const adapter = process.env.CF_WORKERS
 		})
 	: undefined;
 
-// GitHub Pages 的项目地址包含 /blog；Vercel 的站点部署在根路径。
+// Astro 的 base 决定资源、导航和静态页面使用的路径前缀。
+// GitHub Pages 站点实际发布在 https://2104852254-lab.github.io/blog/；
+// Vercel 站点发布在域名根目录，所以保留 /。
 const isGitHubPagesBuild = process.env.DEPLOY_TARGET === "github-pages";
 
 // https://astro.build/config
 export default defineConfig({
 	site: siteConfig.site_url,
 
+	// 让 Astro 在构建 HTML、CSS、JS 和站内链接时自动使用对应的平台路径。
 	base: isGitHubPagesBuild ? "/blog" : "/",
 	trailingSlash: "always",
 
