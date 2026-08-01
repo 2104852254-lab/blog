@@ -242,7 +242,8 @@ const siteLang = lang.replace("_", "-");
         BANNER_HEIGHT_EXTEND,
         PAGE_WIDTH,
         configHue,
-        defaultMode: siteConfig.themeColor.defaultMode ?? "light",
+        // GitHub Pages 与 Vercel 共用这份配置；未配置时也统一以暗色作为默认主题。
+        defaultMode: siteConfig.themeColor.defaultMode ?? "dark",
         defaultWallpaperMode: backgroundWallpaper.mode,
         isWallpaperSwitchable:
           displaySettingsConfig.wallpaperModeSwitchable,
@@ -1306,7 +1307,8 @@ function disableAnimation() {
       }
 
       // 同步主题状态 - 解决从首页进入文章页面时代码块渲染问题
-      const storedTheme = localStorage.getItem("theme") || siteConfig.themeColor.defaultMode || "light";
+      // 优先保留访客手动选择的主题；没有保存记录时，两个部署平台都默认使用暗色。
+      const storedTheme = localStorage.getItem("theme") || siteConfig.themeColor.defaultMode || "dark";
       let isDark = false;
       
       // 处理 system 模式
