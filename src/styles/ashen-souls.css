@@ -27,7 +27,7 @@
 	--line-divider: rgb(194 158 88 / 0.24);
 	--line-color: rgb(194 158 88 / 0.3);
 	--meta-divider: rgb(194 158 88 / 0.38);
-	--content-meta: rgb(218 205 181 / 0.62);
+	--content-meta: #b2a68f;
 	--inline-code-bg: #1e1a14;
 	--inline-code-color: #d9ad63;
 	--muted: #181712;
@@ -282,7 +282,7 @@
 	box-shadow: 0 0 9px rgb(198 106 50 / 0.5);
 }
 
-.theme-ashen .post-card-image img,
+.theme-ashen .post-card-image.themed-cover img,
 .theme-ashen .profile-avatar-image img {
 	filter: saturate(0.52) contrast(1.1) brightness(0.72);
 	transition:
@@ -290,7 +290,7 @@
 		transform 260ms ease;
 }
 
-.theme-ashen .post-card-image:hover img,
+.theme-ashen .post-card-image.themed-cover:hover img,
 .theme-ashen .profile-avatar-image:hover img {
 	filter: saturate(0.75) contrast(1.12) brightness(0.84);
 }
@@ -398,7 +398,7 @@
 	--line-divider: rgb(70 108 145 / 0.25);
 	--line-color: rgb(70 108 145 / 0.32);
 	--meta-divider: rgb(70 108 145 / 0.38);
-	--content-meta: rgb(49 74 101 / 0.66);
+	--content-meta: #536981;
 	--inline-code-bg: #e7f0f8;
 	--inline-code-color: #315f89;
 	--muted: #e5eef7;
@@ -427,6 +427,17 @@
 		radial-gradient(circle at 82% 16%, rgb(183 210 235 / 0.38), transparent 38rem),
 		linear-gradient(180deg, #f8fbff 0%, #edf4fb 46%, #e4edf6 100%);
 	color: #263d55;
+}
+
+/* 元信息和简介采用可读的实色，避免浅色卡片上的半透明灰字过淡。 */
+.theme-ashen .post-meta-root:not(.post-meta-cover),
+.theme-ashen .post-meta-root:not(.post-meta-cover) .text-50,
+.theme-ashen .profile-bio {
+	color: var(--content-meta);
+}
+
+.theme-ashen .profile-name {
+	color: var(--deep-text);
 }
 
 .theme-ashen:not(.dark) body::before {
@@ -508,11 +519,14 @@
 }
 
 .theme-ashen.dark #light-banner-images-container {
+	/* 原生懒加载只请求当前可见的主题和设备尺寸；切换后自动加载另一张。 */
+	display: none;
 	opacity: 0;
 	visibility: hidden;
 }
 
 .theme-ashen:not(.dark) #banner-images-container {
+	display: none;
 	opacity: 0;
 	visibility: hidden;
 }
@@ -618,12 +632,12 @@
 	visibility: hidden;
 }
 
-.theme-ashen:not(.dark) .post-card-image img,
+.theme-ashen:not(.dark) .post-card-image.themed-cover img,
 .theme-ashen:not(.dark) .profile-avatar-image img {
 	filter: saturate(0.72) contrast(1.06) brightness(0.94);
 }
 
-.theme-ashen:not(.dark) .post-card-image:hover img,
+.theme-ashen:not(.dark) .post-card-image.themed-cover:hover img,
 .theme-ashen:not(.dark) .profile-avatar-image:hover img {
 	filter: saturate(0.84) contrast(1.08) brightness(1);
 }

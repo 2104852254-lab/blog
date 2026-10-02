@@ -2,7 +2,7 @@
 import { Icon } from "astro-icon/components";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
-import type { PostForList } from "@/utils/content-utils";
+import { getSortedPostsList, type PostForList } from "@/utils/content-utils";
 import { formatDateToYYYYMMDD } from "@/utils/date-utils";
 import { getPostUrlBySlug, url } from "@/utils/url-utils";
 
@@ -16,11 +16,14 @@ const apiUrl = url("/api/allPostMeta.json");
 const relatedIds = JSON.stringify(relatedPosts.map((p) => p.id));
 const noRelatedPostsText = i18n(I18nKey.noRelatedPosts);
 const noRandomPostsText = i18n(I18nKey.noRandomPosts);
+// 没有候选文章时不显示空栏；后续发布更多文章后会自动恢复。
+const excludedIds = new Set([currentPostId, ...relatedPosts.map((post) => post.id)]);
+const hasRandomPosts = (await getSortedPostsList()).some((post) => !excludedIds.has(post.id) && !post.data.password);
 ---
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{(relatedPosts.length > 0 || hasRandomPosts) && <div class:list={["grid grid-cols-1 gap-4 mb-4", relatedPosts.length > 0 && hasRandomPosts && "md:grid-cols-2"]}>
   {/* 左栏：相关文章（静态） */}
-  <div class="card-base p-5 md:p-6 flex flex-col">
+  {relatedPosts.length > 0 && <div class="card-base p-5 md:p-6 flex flex-col">
     <div class="flex items-center gap-2 pb-3 mb-1 border-b border-(--line-divider)">
       <Icon is:inline
         name="material-symbols:signpost"
@@ -71,10 +74,10 @@ const noRandomPostsText = i18n(I18nKey.noRandomPosts);
         <span class="text-sm">{noRelatedPostsText}</span>
       </div>
     )}
-  </div>
+  </div>}
 
   {/* 右栏：随机文章（客户端 fetch 渲染） */}
-  <div class="card-base p-5 md:p-6 flex flex-col">
+  {hasRandomPosts && <div class="card-base p-5 md:p-6 flex flex-col">
     <div class="flex items-center gap-2 pb-3 mb-1 border-b border-(--line-divider)">
       <Icon is:inline
         name="material-symbols:recommend"
@@ -99,8 +102,8 @@ const noRandomPostsText = i18n(I18nKey.noRandomPosts);
         <span class="text-sm">{noRandomPostsText}</span>
       </div>
     </div>
-  </div>
-</div>
+  </div>}
+</div>}
 
 <script is:inline>
 function renderRandomPosts() {

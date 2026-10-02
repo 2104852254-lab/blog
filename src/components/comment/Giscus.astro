@@ -1,69 +1,57 @@
 ---
 import { commentConfig } from "@/config";
-
-if (!commentConfig?.giscus) {
-	throw new Error("Giscus comments are not configured");
-}
-
+interface Props { path: string; }
+const { path } = Astro.props;
 const giscus = commentConfig.giscus;
-const lightTheme = "light";
-const darkTheme = "dark";
+if (!giscus) throw new Error("Giscus comments are not configured");
+const config = {
+	repo: giscus.repo,
+	"repo-id": giscus.repoId,
+	category: giscus.category,
+	"category-id": giscus.categoryId,
+	mapping: giscus.mapping,
+	term: path,
+	strict: giscus.strict,
+	"reactions-enabled": giscus.reactionsEnabled,
+	"emit-metadata": giscus.emitMetadata,
+	"input-position": giscus.inputPosition,
+	lang: giscus.lang,
+	loading: giscus.loading,
+};
 ---
 
-<!-- 
-  Giscus 官方Web Component用法，兼容Astro静态输出，无需import包，无需NPM依赖！
-  参考：https://giscus.app/ 详情配置说明
--->
-<giscus-widget
-  id="comments"
-  repo={giscus.repo}
-  repoId={giscus.repoId}
-  category={giscus.category}
-  categoryId={giscus.categoryId}
-  mapping={giscus.mapping}
-  strict={giscus.strict}
-  reactionsEnabled={giscus.reactionsEnabled}
-  emitMetadata={giscus.emitMetadata}
-  inputPosition={giscus.inputPosition}
-  theme={lightTheme}
-  lang={giscus.lang}
-  loading={giscus.loading}
-/>
+<div id="giscus-comments" class="giscus" data-config={JSON.stringify(config)}></div>
+<p class="mt-4 text-sm text-(--content-meta)">
+  评论需要 GitHub 登录；如果加载失败，也可以
+  <a class="underline text-(--primary)" href={`https://github.com/${giscus.repo}/discussions`} target="_blank" rel="noopener noreferrer">前往 GitHub 讨论</a>。
+</p>
 
-<script is:inline define:vars={{ lightTheme, darkTheme }}>
-  const requestedPath = new URLSearchParams(window.location.search).get("path");
-  const widget = document.querySelector("giscus-widget");
-  if (requestedPath && widget) {
-    widget.setAttribute("mapping", "specific");
-    widget.setAttribute("term", requestedPath);
-  }
-
-  import("https://esm.sh/giscus");
-
-  function updateGiscusTheme() {
-    const isDark = document.documentElement.classList.contains('dark');
-    const theme = isDark ? darkTheme : lightTheme;
-    if (widget) {
-      widget.setAttribute('theme', theme);
+<script is:inline>
+  // 使用官方脚本，不经过第三方模块 CDN；切换文章时重新挂载，清理旧主题监听。
+  (() => {
+    const container = document.getElementById("giscus-comments");
+    if (!container || container.querySelector("script")) return;
+    const getTheme = () => document.documentElement.classList.contains("dark") ? "dark_dimmed" : "light";
+    const script = document.createElement("script");
+    script.src = "https://giscus.app/client.js";
+    script.async = true;
+    script.crossOrigin = "anonymous";
+    const config = JSON.parse(container.dataset.config);
+    // 动态页内嵌评论仍按单条动态归属；普通文章不允许查询参数改变评论归属。
+    const requestedPath = new URLSearchParams(location.search).get("path");
+    if (config.term === "/dynamic/" && requestedPath?.startsWith("/dynamic/") && requestedPath.length <= 512) {
+      config.term = requestedPath;
     }
-  }
+    for (const [name, value] of Object.entries(config)) {
+      script.setAttribute(`data-${name}`, value);
+    }
+    script.setAttribute("data-theme", getTheme());
+    container.appendChild(script);
 
-  // Initial update
-  updateGiscusTheme();
-
-  // Clean up previous observer if exists
-  if (window.giscusThemeObserver) {
-    window.giscusThemeObserver.disconnect();
-  }
-
-  // Create new observer
-  window.giscusThemeObserver = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-        updateGiscusTheme();
-      }
+    window.giscusThemeObserver?.disconnect();
+    window.giscusThemeObserver = new MutationObserver(() => {
+      container.querySelector("iframe")?.contentWindow?.postMessage({ giscus: { setConfig: { theme: getTheme() } } }, "https://giscus.app");
     });
-  });
-
-  window.giscusThemeObserver.observe(document.documentElement, { attributes: true });
+    window.giscusThemeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+  })();
 </script>

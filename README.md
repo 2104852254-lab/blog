@@ -43,6 +43,39 @@ pnpm dev
 
 仓库保留了 GitHub Pages 工作流。将变更推送到默认分支后，可在仓库的 **Settings → Pages** 中选择 GitHub Actions 作为发布方式。
 
+默认分支为 `master`，推送后 GitHub Pages 与 Vercel 自动构建。同一份代码会自动适配 Pages 的 `/blog/` 路径和 Vercel 的根路径。
+
+- [Vercel 主站](https://blog-seven-tau-84.vercel.app/)：搜索引擎的主收录地址。
+- [GitHub Pages 镜像](https://2104852254-lab.github.io/blog/)：可正常浏览、搜索与评论。
+- 改域名时同步修改 `src/config/siteConfig.ts` 中的平台网址和 `canonical_url`，不要在文章中填写本地网址。
+
+## 功能与配置
+
+| 功能 | 配置或使用方式 |
+| --- | --- |
+| 评论 | `src/config/commentConfig.ts`，使用本仓库的 Giscus；仓库需开启 Discussions 并安装 [Giscus App](https://github.com/apps/giscus) |
+| 评论归属 | 根据文章固定路径匹配，Vercel 和 Pages 共用评论；修改标题不改变评论归属 |
+| RSS | 页面头部自动提供订阅地址；侧栏 RSS 按钮也支持两种部署路径 |
+| 搜索 | 构建时由 Pagefind 生成索引；本地开发预览搜索需先执行 `pnpm build` |
+| 文章封面 | frontmatter 中的 `image`；需要明暗两张图时填写不同的 `lightImage`，同一张实拍照片无需重复填写 |
+| 背景与个人图片 | `backgroundWallpaper.ts`、`profileConfig.ts`；默认暗色，读者选择会保存 |
+| 分享预览 | 自动使用文章封面，无封面时使用站点暗色图片 |
+| 公告 | `src/config/announcementConfig.ts` |
+| 音乐、相册、看板娘 | 功能代码保留，当前关闭；补充自己的素材后在对应配置中启用，不会自动恢复模板素材 |
+
+使用说明参见 [Firefly 官方文档](https://docs-firefly.cuteleaf.cn/zh/) 和 [评论教程](https://docs-firefly.cuteleaf.cn/zh/guide/comment.html)。最新文档可能包含本仓库版本尚未提供的功能，请先确认对应组件是否存在。
+
+## 发布前检查
+
+```bash
+pnpm check
+pnpm type-check
+pnpm build
+node scripts/check-site.mjs
+```
+
+检查 Pages 构建时，设置 `DEPLOY_TARGET=github-pages` 后执行构建，再运行 `node scripts/check-site.mjs /blog/`。检查脚本会验证正式链接、分享信息、RSS 与站点地图，防止子路径问题再次出现。
+
 ## 致谢与许可
 
 本项目是在 [Firefly](https://github.com/CuteLeaf/Firefly) 的基础上进行个人化改造而成；Firefly 的原始设计又参考并继承自 [Fuwari](https://github.com/saicaca/fuwari)。感谢这些开源项目及其贡献者。

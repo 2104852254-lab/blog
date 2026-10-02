@@ -235,32 +235,11 @@ export default defineConfig({
 		svelte(),
 		sitemap({
 			filter: (page) => {
-				// 根据页面开关配置过滤sitemap
-				const url = new URL(page);
-				const pathname = url.pathname;
-				if (pathname === "/dynamic/" && !siteConfig.pages.dynamic) {
-					return false;
-				}
-				if (pathname === "/friends/" && !siteConfig.pages.friends) {
-					return false;
-				}
-				if (pathname === "/sponsor/" && !siteConfig.pages.sponsor) {
-					return false;
-				}
-				if (pathname === "/guestbook/" && !siteConfig.pages.guestbook) {
-					return false;
-				}
-				if (pathname === "/bangumi/" && !siteConfig.pages.bangumi) {
-					return false;
-				}
-				if (pathname === "/gallery/" && !siteConfig.pages.gallery) {
-					return false;
-				}
-				if (pathname === "/anime/" && !siteConfig.pages.anime) {
-					return false;
-				}
-
-				return true;
+				// 先去掉 Pages 的 /blog 前缀，再过滤关闭功能及其所有子页面。
+				const pathname = new URL(page).pathname;
+				const route = isGitHubPagesBuild ? pathname.replace(/^\/blog(?=\/|$)/, "") : pathname;
+				const section = route.split("/")[1];
+				return section !== "404" && siteConfig.pages[section] !== false;
 			},
 		}),
 		mdx(),

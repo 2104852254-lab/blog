@@ -26,6 +26,8 @@ export const siteConfig: SiteConfig = {
 
 	// 站点 URL：不要直接填写 localhost；这里会自动选择对应平台的正式地址。
 	site_url: SITE_URL,
+	// 两个平台展示相同内容：搜索引擎统一收录此主网址，避免重复收录。
+	canonical_url: "https://blog-seven-tau-84.vercel.app/",
 
 	// 站点描述
 	description:
@@ -158,7 +160,8 @@ export const siteConfig: SiteConfig = {
 			// 是否显示发布日期
 			showPublished: false,
 			// 是否显示字数
-			showWords: true,
+			// 字数已在标题下显示，底部不再重复。
+			showWords: false,
 			// 是否显示阅读时间
 			showReadingTime: false,
 		},

@@ -95,7 +95,7 @@ const profileUrl = url(dynamicConfig.profileUrl || "/about/");
 		<DynamicGallery sourceId={`${anchorId}-content`} />
 		{showInlineComments && commentPath && (
 			<DynamicInlineComments
-				src={`/dynamic/comments/?path=${encodeURIComponent(commentPath)}`}
+				src={url(`/dynamic/comments/?path=${encodeURIComponent(commentPath)}`)}
 			/>
 		)}
 	</article>

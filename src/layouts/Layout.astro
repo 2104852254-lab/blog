@@ -1,4 +1,7 @@
 ---
+import { getImage } from "astro:assets";
+import type { ImageMetadata } from "astro";
+import * as path from "node:path";
 import GoogleAnalytics from "@components/analytics/GoogleAnalytics.astro";
 import La51Analytics from "@components/analytics/La51Analytics.astro";
 import MicrosoftClarity from "@components/analytics/MicrosoftClarity.astro";
@@ -14,7 +17,9 @@ import {
 	backgroundWallpaper,
 	displaySettingsConfig,
 	expressiveCodeConfig,
+	musicPlayerConfig,
 	profileConfig,
+	sakuraConfig,
 	siteConfig,
 } from "@/config";
 import {
@@ -37,13 +42,15 @@ import "@/styles/ashen-souls.css";
 interface Props {
 	title?: string;
 	banner?: string;
+	bannerBasePath?: string;
+	author?: string;
 	description?: string;
 	lang?: string;
 	setOGTypeArticle?: boolean;
 	postSlug?: string;
 }
 
-let { title, description, lang, setOGTypeArticle, postSlug } = Astro.props;
+let { title, banner, bannerBasePath = "/", author, description, lang, setOGTypeArticle, postSlug } = Astro.props;
 
 // apply a class to the body element to decide the height of the banner, only used for initial page load
 // Swup can update the body for each page visit, but it's after the page transition, causing a delay for banner height change
@@ -73,8 +80,30 @@ if (title) {
 }
 
 let ogImageUrl: string | undefined;
+// 主网址去掉部署前缀、查询参数和锚点；Pages 与 Vercel 共享同一收录地址。
+const base = import.meta.env.BASE_URL;
+const logicalPath = base !== "/" && Astro.url.pathname.startsWith(base)
+	? Astro.url.pathname.slice(base.length)
+	: Astro.url.pathname.replace(/^\//, "");
+const canonicalUrl = new URL(logicalPath, (siteConfig.canonical_url || siteConfig.site_url).replace(/\/?$/, "/")).href;
 if (siteConfig.post.generateOgImages && postSlug) {
-	ogImageUrl = new URL(`/og/${postSlug}.png`, Astro.site).toString();
+	ogImageUrl = new URL(url(`/og/${postSlug}.png`), Astro.site).href;
+} else {
+	// 分享预览复用文章封面；没有封面的页面使用暗色站点图片，不额外生成海报。
+	const imageSrc = banner || profileConfig.avatar;
+	if (imageSrc && !imageSrc.startsWith("data:")) {
+		if (imageSrc.startsWith("/") || /^https?:/.test(imageSrc)) {
+			ogImageUrl = new URL(url(imageSrc), Astro.site).href;
+		} else {
+			const files = import.meta.glob<ImageMetadata>("../**/*.{png,jpg,jpeg,webp,avif}", { import: "default" });
+			const imagePath = path.normalize(path.join("../", banner ? bannerBasePath : "/", imageSrc)).replace(/\\/g, "/");
+			const loadImage = files[imagePath];
+			if (loadImage) {
+				const optimized = await getImage({ src: await loadImage(), width: 1200, format: "jpg", quality: 80 });
+				ogImageUrl = new URL(optimized.src, Astro.site).href;
+			}
+		}
+	}
 }
 
 const favicons: Favicon[] =
@@ -90,7 +119,7 @@ const siteLang = lang.replace("_", "-");
 ---
 
 <!doctype html>
-<html lang={siteLang} class="theme-ashen bg-(--page-bg) text-[14px] md:text-[16px]" data-wallpaper-mode={backgroundWallpaper.mode}>
+<html lang={siteLang} class="theme-ashen bg-(--page-bg) text-[16px]" data-wallpaper-mode={backgroundWallpaper.mode}>
   <head>
     <meta charset="UTF-8" />
     {analyticsConfig?.googleAnalyticsId && (
@@ -130,16 +159,20 @@ const siteLang = lang.replace("_", "-");
         <meta name="keywords" content={siteConfig.keywords.join(", ")} />
       )
     }
-    <meta name="author" content={profileConfig.name} />
+    <meta name="author" content={author || profileConfig.name} />
+    {logicalPath === "404/" && <meta name="robots" content="noindex" />}
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="alternate" type="application/rss+xml" title={`${siteConfig.title} RSS`} href={url("/rss.xml")} />
 
     <meta property="og:site_name" content={siteConfig.title} />
-    <meta property="og:url" content={Astro.url} />
+    <meta property="og:url" content={canonicalUrl} />
     <meta property="og:title" content={pageTitle} />
     <meta
       property="og:description"
       content={description || siteConfig.description || pageTitle}
     />
     {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+    {ogImageUrl && <meta property="og:image:alt" content={title || siteConfig.title} />}
     {
       setOGTypeArticle ? (
         <meta property="og:type" content="article" />
@@ -149,7 +182,8 @@ const siteLang = lang.replace("_", "-");
     }
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content={Astro.url} />
+    <meta property="twitter:url" content={canonicalUrl} />
+    {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
     <meta name="twitter:title" content={pageTitle} />
     <meta
       name="twitter:description"
@@ -591,13 +625,14 @@ const siteLang = lang.replace("_", "-");
     <!-- 页面顶部渐变高光效果 - 只在full和semifull模式下显示 -->
     {shouldShowTopHighlight && <div class="top-gradient-highlight" />}
     <ConfigCarrier />
-    <MusicManager />
+    {(musicPlayerConfig.showInNavbar || musicPlayerConfig.showInSidebar !== false) && <MusicManager />}
     <slot />
 
 
 
     <!-- Sakura Effect -->
-    <SakuraEffect />
+    <!-- 关闭且不允许访客切换时，不加载特效脚本；配置仍可随时重新启用。 -->
+    {(sakuraConfig.enable || displaySettingsConfig.sakuraSwitchable) && <SakuraEffect />}
 
     <!-- Fancybox Manager -->
     <FancyboxManager />

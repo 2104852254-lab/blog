@@ -60,6 +60,7 @@ const bannerPostMeta = {
 const processedImage = processCoverImageSync(entry.data.image, entry.id);
 const apiUrls = getApiUrlList(entry.data.image, entry.id);
 const processedLightImage = entry.data.lightImage
+	&& entry.data.lightImage !== entry.data.image
 	? processCoverImageSync(entry.data.lightImage, entry.id)
 	: "";
 const lightApiUrls = entry.data.lightImage
@@ -100,7 +101,7 @@ const jsonLd = {
 	keywords: entry.data.tags,
 	author: {
 		"@type": "Person",
-		name: profileConfig.name,
+		name: entry.data.author || profileConfig.name,
 		url: Astro.site,
 	},
 	datePublished: formatDateToYYYYMMDD(entry.data.published),
@@ -115,6 +116,8 @@ const relatedPosts = await getRelatedPosts(entry, 5);
 
 <MainGridLayout
   banner={processedImage}
+  bannerBasePath={getFileDirFromPath(entry.filePath || "")}
+  author={entry.data.author}
   title={entry.data.title}
   description={entry.data.description}
   lang={entry.data.lang}

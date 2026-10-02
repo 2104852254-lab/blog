@@ -3,6 +3,7 @@ import { onMount, tick } from "svelte";
 import ClientPagination from "@/components/common/ClientPagination.svelte";
 import { formatTimezoneOffset } from "@/utils/date-utils";
 import { fetchMemos } from "@/utils/memos-adapter";
+import { url } from "@/utils/url-utils";
 import { registerDynamicGallery } from "./dynamic-gallery";
 import { registerDynamicInlineComments } from "./dynamic-inline-comments";
 
@@ -227,9 +228,9 @@ function createItem(entry: DynamicData) {
 	const comments = root.querySelector<HTMLElement>("dynamic-inline-comments");
 	if (comments) {
 		if (showComments) {
-			comments.dataset.src = `/dynamic/comments/?path=${encodeURIComponent(
+			comments.dataset.src = url(`/dynamic/comments/?path=${encodeURIComponent(
 				`/dynamic/${entry.id}/`,
-			)}`;
+			)}`);
 		} else {
 			comments.remove();
 		}

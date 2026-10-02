@@ -17,7 +17,7 @@ export const announcementConfig: AnnouncementConfig = {
 		// 链接文本
 		text: "阅读序章",
 		// 链接 URL
-		url: "/about/",
+		url: "/posts/ashen-prologue/",
 		// 内部链接
 		external: false,
 	},

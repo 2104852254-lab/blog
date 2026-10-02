@@ -58,7 +58,7 @@ const hasCover =
 const hasLightCover =
 	processedLightImage !== undefined &&
 	processedLightImage !== null &&
-	processedLightImage !== "";
+	processedLightImage !== "" && processedLightImage !== processedImage;
 
 const coverWidth = "30%";
 
@@ -188,7 +188,7 @@ const minutes = remarkPluginFrontmatter.minutes;
     )}
 
     <!-- stats（与底部标签二选一） -->
-    {!showTagsAtBottom && (
+    {!showTagsAtBottom && (statsShowPublished || statsShowWords || statsShowReadingTime) && (
       <PostStats
         published={published}
         words={words}
@@ -208,6 +208,7 @@ const minutes = remarkPluginFrontmatter.minutes;
         aria-label={title}
         class:list={[
           "post-card-image",
+          hasLightCover && "themed-cover",
           "group",
           "w-full md:w-(--coverWidth)",
           "aspect-2/1 md:aspect-auto",

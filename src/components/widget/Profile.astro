@@ -40,8 +40,7 @@ const hasLightAvatar = Boolean(profileConfig.lightAvatar);
         "mx-auto lg:w-full h-full lg:mt-0",
         hasLightAvatar && "has-light-avatar",
       ]}
-      loading="eager"
-      fetchpriority="high"
+      loading="lazy"
       widths={[350]}
       sizes="350px"
     />
@@ -51,8 +50,7 @@ const hasLightAvatar = Boolean(profileConfig.lightAvatar);
         src={profileConfig.lightAvatar || ""}
         alt="Profile Image of the Author"
         class="profile-avatar-image profile-avatar-theme-cover profile-avatar-light-cover absolute inset-0 mx-auto lg:w-full h-full lg:mt-0"
-        loading="eager"
-        fetchpriority="high"
+        loading="lazy"
         widths={[350]}
         sizes="350px"
       />
@@ -60,7 +58,7 @@ const hasLightAvatar = Boolean(profileConfig.lightAvatar);
   </a>
   <div class="px-2">
     <div
-      class="font-bold text-xl text-center mb-1 dark:text-neutral-50 transition"
+      class="profile-name font-bold text-xl text-center mb-1 transition"
     >
       {profileConfig.name}
     </div>
@@ -68,7 +66,7 @@ const hasLightAvatar = Boolean(profileConfig.lightAvatar);
       class="h-1 w-5 bg-(--primary) mx-auto rounded-full mb-2 transition"
     >
     </div>
-    <div class="text-center text-neutral-400 mb-2.5 transition">
+    <div class="profile-bio text-center mb-2.5 transition">
       {profileConfig.bio}
     </div>
         <div class="flex flex-wrap gap-2 justify-center mb-1">
@@ -98,7 +96,7 @@ const hasLightAvatar = Boolean(profileConfig.lightAvatar);
                             {showName && item.name}
                         </a>
                     } else {
-                        return <a rel="me" aria-label={item.name} href={item.url} target="_blank" class={className}>
+                        return <a rel="me noopener noreferrer" aria-label={item.name} href={url(item.url)} target="_blank" class={className}>
                             <Icon is:inline name={item.icon} class="text-[1.5rem]"></Icon>
                             {showName && item.name}
                         </a>
@@ -125,7 +123,7 @@ const hasLightAvatar = Boolean(profileConfig.lightAvatar);
                             {item.name}
                         </a>
                     } else {
-                        return <a rel="me" aria-label={item.name} href={item.url} target="_blank"
+                        return <a rel="me noopener noreferrer" aria-label={item.name} href={url(item.url)} target="_blank"
                                             class="btn-regular rounded-lg h-10 gap-2 px-3 font-bold active:scale-95">
                                 <Icon is:inline name={item.icon} class="text-[1.5rem]"></Icon>
                                 {item.name}
