@@ -82,4 +82,6 @@ node scripts/check-site.mjs
 
 项目代码继续遵循 [MIT License](./LICENSE)。原有许可证文件与应有的开源归属均被保留。
 
+导航栏与浏览器标签的火焰图标来自 Google [Material Symbols](https://github.com/google/material-design-icons) 的 `local-fire-department-rounded`，仅调整配色；遵循 [Apache-2.0](./public/favicon/LICENSE-material-symbols.txt)。
+
 本站的“余烬书库”视觉、文字和主题图片为本项目使用的原创内容；未使用任何游戏官方角色、商标或场景素材。

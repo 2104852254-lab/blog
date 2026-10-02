@@ -57,16 +57,16 @@ export const siteConfig: SiteConfig = {
 		followTheme: false,
 	},
 
-	// Favicon 配置
-	// 如果启用了OpenGraph图片功能，数组中需要包含png格式的favicon图标
+	// 浏览器标签图标：与导航栏使用同款金色火焰，文件放在 public/favicon/。
+	// PNG 用于兼容与 OpenGraph；SVG 保持高分屏清晰。换图时同步替换两份文件。
 	favicon: [
 		{
-			// 图标文件路径
-			src: "/favicon/favicon.ico",
-			// 可选，指定主题 'light' | 'dark'
-			// theme: "light",
-			// 可选，图标大小
-			// sizes: "32x32",
+			src: "/favicon/ashen-flame.png",
+			sizes: "192x192",
+		},
+		{
+			src: "/favicon/ashen-flame.svg",
+			sizes: "any",
 		},
 	],
 
