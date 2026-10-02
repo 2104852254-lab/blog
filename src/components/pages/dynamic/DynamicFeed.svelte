@@ -228,9 +228,11 @@ function createItem(entry: DynamicData) {
 	const comments = root.querySelector<HTMLElement>("dynamic-inline-comments");
 	if (comments) {
 		if (showComments) {
-			comments.dataset.src = url(`/dynamic/comments/?path=${encodeURIComponent(
-				`/dynamic/${entry.id}/`,
-			)}`);
+			comments.dataset.src = url(
+				`/dynamic/comments/?path=${encodeURIComponent(
+					`/dynamic/${entry.id}/`,
+				)}`,
+			);
 		} else {
 			comments.remove();
 		}

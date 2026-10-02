@@ -1,6 +1,5 @@
 ---
 import { getImage } from "astro:assets";
-import type { ImageMetadata } from "astro";
 import * as path from "node:path";
 import GoogleAnalytics from "@components/analytics/GoogleAnalytics.astro";
 import La51Analytics from "@components/analytics/La51Analytics.astro";
@@ -11,6 +10,7 @@ import FontSetup from "@components/features/FontSetup.astro";
 import MusicManager from "@components/features/MusicManager.astro";
 import SakuraEffect from "@components/features/SakuraEffect.astro";
 import ConfigCarrier from "@components/layout/ConfigCarrier.astro";
+import type { ImageMetadata } from "astro";
 
 import {
 	analyticsConfig,
@@ -50,7 +50,16 @@ interface Props {
 	postSlug?: string;
 }
 
-let { title, banner, bannerBasePath = "/", author, description, lang, setOGTypeArticle, postSlug } = Astro.props;
+let {
+	title,
+	banner,
+	bannerBasePath = "/",
+	author,
+	description,
+	lang,
+	setOGTypeArticle,
+	postSlug,
+} = Astro.props;
 
 // apply a class to the body element to decide the height of the banner, only used for initial page load
 // Swup can update the body for each page visit, but it's after the page transition, causing a delay for banner height change
@@ -82,10 +91,14 @@ if (title) {
 let ogImageUrl: string | undefined;
 // 主网址去掉部署前缀、查询参数和锚点；Pages 与 Vercel 共享同一收录地址。
 const base = import.meta.env.BASE_URL;
-const logicalPath = base !== "/" && Astro.url.pathname.startsWith(base)
-	? Astro.url.pathname.slice(base.length)
-	: Astro.url.pathname.replace(/^\//, "");
-const canonicalUrl = new URL(logicalPath, (siteConfig.canonical_url || siteConfig.site_url).replace(/\/?$/, "/")).href;
+const logicalPath =
+	base !== "/" && Astro.url.pathname.startsWith(base)
+		? Astro.url.pathname.slice(base.length)
+		: Astro.url.pathname.replace(/^\//, "");
+const canonicalUrl = new URL(
+	logicalPath,
+	(siteConfig.canonical_url || siteConfig.site_url).replace(/\/?$/, "/"),
+).href;
 if (siteConfig.post.generateOgImages && postSlug) {
 	ogImageUrl = new URL(url(`/og/${postSlug}.png`), Astro.site).href;
 } else {
@@ -95,11 +108,21 @@ if (siteConfig.post.generateOgImages && postSlug) {
 		if (imageSrc.startsWith("/") || /^https?:/.test(imageSrc)) {
 			ogImageUrl = new URL(url(imageSrc), Astro.site).href;
 		} else {
-			const files = import.meta.glob<ImageMetadata>("../**/*.{png,jpg,jpeg,webp,avif}", { import: "default" });
-			const imagePath = path.normalize(path.join("../", banner ? bannerBasePath : "/", imageSrc)).replace(/\\/g, "/");
+			const files = import.meta.glob<ImageMetadata>(
+				"../**/*.{png,jpg,jpeg,webp,avif}",
+				{ import: "default" },
+			);
+			const imagePath = path
+				.normalize(path.join("../", banner ? bannerBasePath : "/", imageSrc))
+				.replace(/\\/g, "/");
 			const loadImage = files[imagePath];
 			if (loadImage) {
-				const optimized = await getImage({ src: await loadImage(), width: 1200, format: "jpg", quality: 80 });
+				const optimized = await getImage({
+					src: await loadImage(),
+					width: 1200,
+					format: "jpg",
+					quality: 80,
+				});
 				ogImageUrl = new URL(optimized.src, Astro.site).href;
 			}
 		}

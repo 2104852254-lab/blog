@@ -17,8 +17,13 @@ const relatedIds = JSON.stringify(relatedPosts.map((p) => p.id));
 const noRelatedPostsText = i18n(I18nKey.noRelatedPosts);
 const noRandomPostsText = i18n(I18nKey.noRandomPosts);
 // 没有候选文章时不显示空栏；后续发布更多文章后会自动恢复。
-const excludedIds = new Set([currentPostId, ...relatedPosts.map((post) => post.id)]);
-const hasRandomPosts = (await getSortedPostsList()).some((post) => !excludedIds.has(post.id) && !post.data.password);
+const excludedIds = new Set([
+	currentPostId,
+	...relatedPosts.map((post) => post.id),
+]);
+const hasRandomPosts = (await getSortedPostsList()).some(
+	(post) => !excludedIds.has(post.id) && !post.data.password,
+);
 ---
 
 {(relatedPosts.length > 0 || hasRandomPosts) && <div class:list={["grid grid-cols-1 gap-4 mb-4", relatedPosts.length > 0 && hasRandomPosts && "md:grid-cols-2"]}>

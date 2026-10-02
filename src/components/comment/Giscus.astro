@@ -1,6 +1,9 @@
 ---
 import { commentConfig } from "@/config";
-interface Props { path: string; }
+
+interface Props {
+	path: string;
+}
 const { path } = Astro.props;
 const giscus = commentConfig.giscus;
 if (!giscus) throw new Error("Giscus comments are not configured");
