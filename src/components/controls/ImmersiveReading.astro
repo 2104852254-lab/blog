@@ -1,0 +1,111 @@
+---
+import FloatingButton from "@/components/common/FloatingButton.astro";
+import { siteConfig } from "@/config";
+import "@/styles/immersive-reading.css";
+
+const readingConfig = siteConfig.post.immersiveReading;
+---
+
+{readingConfig?.enable && (
+  <>
+    <FloatingButton
+      id="immersive-reading-toggle"
+      icon="material-symbols:menu-book-rounded"
+      toggleIcon="material-symbols:close"
+      ariaLabel="进入沉浸阅读"
+      class="hide"
+    />
+    <FloatingButton
+      id="immersive-toc-toggle"
+      icon="material-symbols:format-list-bulleted"
+      ariaLabel="收起阅读目录"
+      class="hide"
+    />
+    <script is:inline data-swup-ignore-script define:vars={{ readingConfig }}>
+      (function initImmersiveReading() {
+        // 控件在 Swup 替换区外常驻；只绑定一次，切页后重新判断是否是文章。
+        if (window.__immersiveReadingInstalled) return;
+        window.__immersiveReadingInstalled = true;
+        const root = document.documentElement;
+        let active = false;
+        let savedScroll = 0;
+        const entry = document.getElementById("immersive-reading-toggle");
+        const toc = document.getElementById("immersive-toc-toggle");
+
+        function updateButtons() {
+          const available = window.innerWidth >= 1024 && !!document.getElementById("post-container");
+          entry.hidden = !available;
+          entry.classList.toggle("hide", !available);
+          entry.classList.toggle("toggled", active);
+          const button = entry.querySelector("button");
+          button.setAttribute("aria-pressed", String(active));
+          button.setAttribute("aria-label", active ? "退出沉浸阅读" : "进入沉浸阅读");
+          button.setAttribute("title", active ? "退出沉浸阅读（Esc）" : "进入沉浸阅读");
+          toc.hidden = !active || !readingConfig.tocEnabled;
+          toc.classList.toggle("hide", toc.hidden);
+          const open = root.classList.contains("immersive-toc-open");
+          toc.querySelector("button").setAttribute("aria-expanded", String(open));
+          toc.querySelector("button").setAttribute("aria-label", open ? "收起阅读目录" : "展开阅读目录");
+          toc.querySelector("button").setAttribute("aria-controls", "floating-toc-panel");
+          toc.querySelector("button").setAttribute("title", open ? "收起阅读目录" : "展开阅读目录");
+        }
+
+        function exit(restoreScroll = true) {
+          if (!active) return;
+          active = false;
+          root.classList.remove("immersive-reading", "immersive-toc-open");
+          delete root.dataset.readingTocPosition;
+          updateButtons();
+          // 普通退出恢复原位置；切换文章时由 Swup 管理新页面滚动。
+          if (restoreScroll) {
+            window.scrollTo({ top: savedScroll, behavior: "instant" });
+            entry.querySelector("button").focus({ preventScroll: true });
+          }
+        }
+
+        function enter() {
+          const article = document.getElementById("post-container");
+          if (!article || window.innerWidth < 1024 || active) return;
+          savedScroll = window.scrollY;
+          const oldTop = article.getBoundingClientRect().top;
+          active = true;
+          root.dataset.readingTocPosition = readingConfig.tocPosition || "left";
+          root.classList.add("immersive-reading");
+          root.classList.toggle("immersive-toc-open", !!readingConfig.tocEnabled);
+          // 去掉壁纸和侧栏后，让正在阅读的正文尽量留在原视口位置。
+          window.scrollTo({
+            top: Math.max(0, window.scrollY + article.getBoundingClientRect().top - Math.min(oldTop, 32)),
+            behavior: "instant",
+          });
+          updateButtons();
+        }
+
+        function refresh() {
+          if (window.innerWidth < 1024) exit();
+          updateButtons();
+        }
+
+        document.addEventListener("click", (event) => {
+          if (event.target.closest?.("#immersive-reading-toggle")) active ? exit() : enter();
+          if (active && event.target.closest?.("#immersive-toc-toggle")) {
+            root.classList.toggle("immersive-toc-open");
+            updateButtons();
+          }
+        });
+        document.addEventListener("keydown", (event) => { if (event.key === "Escape") exit(); });
+        document.addEventListener("astro:before-swap", () => exit(false));
+        document.addEventListener("astro:page-load", () => {
+          refresh();
+          if (readingConfig.defaultOn) enter();
+        });
+        window.addEventListener("resize", refresh);
+        const initialize = () => {
+          refresh();
+          if (readingConfig.defaultOn) enter();
+        };
+        if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initialize, { once: true });
+        else initialize();
+      })();
+    </script>
+  </>
+)}

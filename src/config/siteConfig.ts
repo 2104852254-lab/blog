@@ -129,8 +129,8 @@ export const siteConfig: SiteConfig = {
 	postListLayout: {
 		// 默认布局模式："list" 列表模式（单列布局），"grid" 网格模式（多列布局）
 		defaultMode: "list",
-		// 移动端默认布局模式，不设置则跟随 defaultMode
-		mobileDefaultMode: "list",
+		// 手机使用上图下文，长标题不会被右侧封面挤窄；桌面仍用列表。
+		mobileDefaultMode: "grid",
 		// 文章简介显示行数，设为 0 则不截断
 		descriptionLines: 3,
 		// 文章卡片底部统计和发布日期是否显示图标
@@ -176,6 +176,13 @@ export const siteConfig: SiteConfig = {
 
 	// 文章内容页配置
 	post: {
+		// 桌面文章页右下角按钮进入沉浸阅读；默认仍显示普通页面。
+		immersiveReading: {
+			enable: true,
+			defaultOn: false,
+			tocEnabled: true, // 复用现有文章目录，可在阅读时收起
+			tocPosition: "left", // "left" 或 "right"
+		},
 		// 提醒框（Admonitions）配置，修改后需要重启开发服务器才能生效
 		// 主题：'github' | 'obsidian' | 'vitepress' | 'docusaurus'，每个主题风格和语法不同，可根据喜好选择
 		rehypeCallouts: {

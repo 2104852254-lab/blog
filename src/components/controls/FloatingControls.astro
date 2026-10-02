@@ -4,6 +4,7 @@ import BackToComment from "./BackToComment.astro";
 import BackToHome from "./BackToHome.astro";
 import BackToTop from "./BackToTop.astro";
 import FloatingTOC from "./FloatingTOC.astro";
+import ImmersiveReading from "./ImmersiveReading.astro";
 
 interface Props {
 	headings?: MarkdownHeading[];
@@ -14,6 +15,7 @@ const { headings, encrypted } = Astro.props;
 ---
 
 <div class="floating-controls-container">
+  <ImmersiveReading />
   <FloatingTOC headings={headings ?? []} encrypted={encrypted} />
   <BackToComment />
   <BackToHome />

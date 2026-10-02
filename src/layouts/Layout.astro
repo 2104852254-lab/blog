@@ -860,11 +860,11 @@ function disableAnimation() {
       document.addEventListener("click", (event) => {
           let panelDom = document.getElementById(panel);
           if (!panelDom) return;
-          let tDom = event.target;
-          if (!(tDom instanceof Node)) return; // Ensure the event target is an HTML Node
+          // 按钮可能在点击时被加载状态替换；原始事件路径仍能判断是否点在面板内。
+          const clickedPath = event.composedPath();
           for (let ig of ignores) {
               let ie = document.getElementById(ig);
-              if (ie == tDom || ie?.contains(tDom)) {
+              if (ie && clickedPath.includes(ie)) {
                   return;
               }
           }

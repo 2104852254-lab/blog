@@ -12,7 +12,9 @@ let keywordDesktop = "";
 let keywordMobile = "";
 let result: SearchResult[] = [];
 let isSearching = false;
-let initialized = false;
+let searchFailed = false;
+let searchRequest = 0;
+let activeDesktop = true;
 let debounceTimer: NodeJS.Timeout;
 
 // --- Mocks for Dev Mode ---
@@ -37,20 +39,19 @@ const togglePanel = () => {
 		?.classList.toggle("float-panel-closed");
 };
 
-const setPanelVisibility = (show: boolean, isDesktop: boolean): void => {
+const setPanelVisibility = (show: boolean): void => {
 	const panel = document.getElementById("search-panel");
-	if (
-		!panel ||
-		(isDesktop && !keywordDesktop) ||
-		(!isDesktop && !keywordMobile)
-	)
-		return;
+	if (!panel) return;
 	show
 		? panel.classList.remove("float-panel-closed")
 		: panel.classList.add("float-panel-closed");
 };
 
 const closeSearchPanel = (): void => {
+	clearTimeout(debounceTimer);
+	searchRequest++;
+	isSearching = false;
+	searchFailed = false;
 	document.getElementById("search-panel")?.classList.add("float-panel-closed");
 	keywordDesktop = "";
 	keywordMobile = "";
@@ -64,23 +65,33 @@ const handleResultClick = (event: Event, url: string): void => {
 };
 
 // --- Core Search Logic ---
-const search = async (keyword: string, isDesktop: boolean): Promise<void> => {
-	if (!keyword) {
-		setPanelVisibility(false, isDesktop);
+const search = async (
+	keyword: string,
+	isDesktop: boolean,
+	retry = false,
+): Promise<void> => {
+	const request = ++searchRequest;
+	clearTimeout(debounceTimer);
+	activeDesktop = isDesktop;
+	searchFailed = false;
+	if (!keyword.trim()) {
+		setPanelVisibility(false);
 		result = [];
+		isSearching = false;
 		return;
 	}
-	if (!initialized) return;
 
 	isSearching = true;
+	setPanelVisibility(true);
 
-	clearTimeout(debounceTimer);
 	debounceTimer = setTimeout(async () => {
 		try {
 			let searchResults: SearchResult[] = [];
 
-			if (import.meta.env.PROD && window.pagefind) {
-				const response = await window.pagefind.search(keyword);
+			if (import.meta.env.PROD) {
+				const pagefind = await window.loadPagefind?.(retry);
+				if (!pagefind) throw new Error("搜索加载入口不可用");
+				const response = await pagefind.search(keyword.trim());
 				searchResults = await Promise.all(
 					response.results.map((item) => item.data()),
 				);
@@ -88,52 +99,28 @@ const search = async (keyword: string, isDesktop: boolean): Promise<void> => {
 				searchResults = fakeResult;
 			}
 
+			// 输入变更或离开页面后，旧请求不能覆盖新结果。
+			if (request !== searchRequest) return;
 			result = searchResults;
-			setPanelVisibility(true, isDesktop);
+			setPanelVisibility(true);
 		} catch (error) {
+			if (request !== searchRequest) return;
 			console.error("Search error:", error);
 			result = [];
-			setPanelVisibility(false, isDesktop);
+			searchFailed = true;
 		} finally {
-			isSearching = false;
+			if (request === searchRequest) isSearching = false;
 		}
 	}, 300); // 300ms debounce
 };
 
-// --- Initialization onMount ---
+// 离开页面时取消防抖，并让仍在下载的旧请求失效。
 onMount(() => {
-	const initializePagefind = () => {
-		initialized = true;
-		if (keywordDesktop) search(keywordDesktop, true);
-		if (keywordMobile) search(keywordMobile, false);
+	return () => {
+		clearTimeout(debounceTimer);
+		searchRequest++;
 	};
-
-	if (import.meta.env.DEV) {
-		console.log("Pagefind mock enabled in development mode.");
-		initializePagefind();
-	} else {
-		if (window.pagefind) {
-			// If script already loaded
-			initializePagefind();
-		} else {
-			// Listen for the event
-			document.addEventListener("pagefindready", initializePagefind, {
-				once: true,
-			});
-			document.addEventListener("pagefindloaderror", initializePagefind, {
-				once: true,
-			});
-		}
-	}
 });
-
-// --- Reactive Statements ---
-$: if (initialized && (keywordDesktop || keywordDesktop === "")) {
-	search(keywordDesktop, true);
-}
-$: if (initialized && (keywordMobile || keywordMobile === "")) {
-	search(keywordMobile, false);
-}
 </script>
 
 <!-- search bar for desktop view -->
@@ -144,6 +131,8 @@ $: if (initialized && (keywordMobile || keywordMobile === "")) {
     <Icon icon="material-symbols:search"
           class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-black/30 dark:text-white/30"></Icon>
     <input placeholder="{i18n(I18nKey.search)}" bind:value={keywordDesktop}
+           aria-label={i18n(I18nKey.search)}
+           on:input={(event) => search(event.currentTarget.value, true)}
            on:focus={() => search(keywordDesktop, true)}
            class="transition-all pl-10 text-sm bg-transparent outline-0
          h-full w-40 active:w-60 focus:w-60 text-black/50 dark:text-white/50"
@@ -168,6 +157,8 @@ top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
         <Icon icon="material-symbols:search"
               class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-black/30 dark:text-white/30"></Icon>
         <input placeholder={i18n(I18nKey.search)} bind:value={keywordMobile}
+               aria-label={i18n(I18nKey.search)}
+               on:input={(event) => search(event.currentTarget.value, false)}
                class="pl-10 absolute inset-0 text-sm bg-transparent outline-0
                focus:w-60 text-black/50 dark:text-white/50"
         >
@@ -177,6 +168,12 @@ top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
     {#if isSearching}
         <div class="transition first-of-type:mt-2 lg:first-of-type:mt-0 block rounded-xl text-lg px-3 py-2 text-50">
             {i18n(I18nKey.searchLoading)}
+        </div>
+    {:else if searchFailed}
+        <div role="alert" class="rounded-xl px-3 py-3 text-75">
+            <p>搜索暂时不可用，请检查网络后重试。</p>
+            <button class="btn-regular rounded-lg px-3 py-1 mt-2"
+                    on:click={() => search(activeDesktop ? keywordDesktop : keywordMobile, activeDesktop, true)}>重试</button>
         </div>
     {:else if result.length > 0}
         {#each result.slice(0, 5) as item}
@@ -219,11 +216,11 @@ top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
                 </span>
             </a>
         {/if}
-    {:else if result.length === 0}
+    {:else if keywordDesktop.trim() || keywordMobile.trim()}
         <div class="transition first-of-type:mt-2 lg:first-of-type:mt-0 block rounded-xl text-lg px-3 py-2 text-50">
             {i18n(I18nKey.searchNoResults)}
         </div>
-    {:else if keywordDesktop || keywordMobile}
+    {:else}
         <div class="transition first-of-type:mt-2 lg:first-of-type:mt-0 block rounded-xl text-lg px-3 py-2 text-50">
             {i18n(I18nKey.searchTypeSomething)}
         </div>
@@ -240,4 +237,3 @@ top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
         overflow-y: auto;
     }
 </style>
-

@@ -14,13 +14,17 @@ declare global {
 		floatingTOCListenersInitialized?: boolean;
 		// biome-ignore lint/suspicious/noExplicitAny: External library
 		spinePlayerInstance?: any;
-		pagefind: {
+		pagefind?: {
 			search: (query: string) => Promise<{
 				results: Array<{
 					data: () => Promise<SearchResult>;
 				}>;
 			}>;
 		};
+		/** 共用按需加载入口；传入 true 会清理引擎缓存的失败后重试。 */
+		loadPagefind?: (
+			retry?: boolean,
+		) => Promise<NonNullable<Window["pagefind"]>>;
 		__fireflyMusic?: {
 			init: () => Promise<void>;
 			getState: () => {

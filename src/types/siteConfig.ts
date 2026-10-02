@@ -128,6 +128,13 @@ export type SiteConfig = {
 
 	// 文章内容页配置
 	post: {
+		/** 仅桌面（≥1024px）提供沉浸阅读，手机保留普通布局。 */
+		immersiveReading?: {
+			enable: boolean;
+			defaultOn?: boolean;
+			tocEnabled?: boolean;
+			tocPosition?: "left" | "right";
+		};
 		// 提醒框（Admonitions）配置
 		rehypeCallouts: {
 			theme: "github" | "obsidian" | "vitepress" | "docusaurus";

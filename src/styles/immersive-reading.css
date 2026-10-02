@@ -1,0 +1,118 @@
+/* 仅桌面进入阅读模式；普通页、手机和原有亮暗主题不受影响。 */
+#immersive-reading-toggle[hidden],
+#immersive-toc-toggle[hidden] {
+	display: none !important;
+}
+
+@media (max-width: 1023px) {
+	#immersive-reading-toggle,
+	#immersive-toc-toggle {
+		display: none !important;
+	}
+}
+
+@media (min-width: 1024px) {
+	html.immersive-reading body {
+		background: var(--page-bg) !important;
+	}
+
+	html.immersive-reading body::before,
+	html.immersive-reading body::after,
+	html.immersive-reading #navbar-wrapper,
+	html.immersive-reading #top-row,
+	html.immersive-reading #wallpaper-region,
+	html.immersive-reading #left-sidebar-wrapper,
+	html.immersive-reading #left-sidebar-dynamic,
+	html.immersive-reading #right-sidebar-static,
+	html.immersive-reading #right-sidebar-dynamic,
+	html.immersive-reading #mobile-bottom-sidebar,
+	html.immersive-reading #category-bar-wrapper,
+	html.immersive-reading .footer,
+	html.immersive-reading #scroll-down-indicator,
+	html.immersive-reading #back-to-home-btn,
+	html.immersive-reading #back-to-comment-btn,
+	html.immersive-reading #back-to-top-btn,
+	html.immersive-reading #floating-toc-btn,
+	html.immersive-reading #content-wrapper > :not(.post-article-wrapper) {
+		display: none !important;
+	}
+
+	html.immersive-reading #main-content-layout {
+		/* 壁纸脚本会写入内联 top!important；静态定位直接使 top 不参与布局。 */
+		position: static !important;
+		top: 0 !important;
+	}
+
+	html.immersive-reading #main-content-layout > div {
+		width: 100% !important;
+		max-width: none !important;
+	}
+
+	html.immersive-reading #main-grid {
+		display: block !important;
+		transform: none !important;
+		padding: 2rem 5rem;
+		transition: none !important;
+	}
+
+	html.immersive-reading #main-content-column,
+	html.immersive-reading #swup-container,
+	html.immersive-reading #content-wrapper,
+	html.immersive-reading .post-article-wrapper {
+		width: 100% !important;
+		transform: none !important;
+		opacity: 1 !important;
+		animation: none !important;
+		transition: none !important;
+	}
+
+	html.immersive-reading .post-article-wrapper {
+		max-width: 52rem;
+		margin: 0 auto;
+	}
+
+	/* 保留正文和许可证；不透明底色隔开背景，沿用当前主题的颜色。 */
+	html.immersive-reading #post-container {
+		background: var(--card-bg) !important;
+	}
+
+	html.immersive-reading.immersive-toc-open[data-reading-toc-position="left"] #main-grid {
+		padding-left: 18rem;
+	}
+
+	html.immersive-reading.immersive-toc-open[data-reading-toc-position="right"] #main-grid {
+		padding-right: 18rem;
+	}
+
+	/* 复用原来的浮动目录及高亮/锚点逻辑，不另建一套目录。 */
+	html.immersive-reading #floating-toc-panel {
+		display: none !important;
+		position: fixed !important;
+		top: 2rem !important;
+		bottom: 2rem !important;
+		left: 1rem !important;
+		right: auto !important;
+		width: 16rem !important;
+		max-height: calc(100vh - 4rem) !important;
+		background: var(--card-bg) !important;
+		transform: none !important;
+		transition: none !important;
+	}
+
+	html.immersive-reading[data-reading-toc-position="right"] #floating-toc-panel {
+		left: auto !important;
+		right: 1rem !important;
+	}
+
+	html.immersive-reading.immersive-toc-open #floating-toc-panel {
+		display: block !important;
+		opacity: 1 !important;
+		visibility: visible !important;
+		pointer-events: auto !important;
+	}
+
+	html.immersive-reading #floating-toc-panel .toc-scroll-container {
+		max-height: calc(100vh - 5.5rem);
+		overflow-y: auto;
+	}
+}

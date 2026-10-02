@@ -46,6 +46,8 @@ import "@/styles/expressive-code.css";
 
 interface Props {
 	title?: string;
+	/** 正文已有一级标题时设为 false，避免重复；首页回退到站点名称。 */
+	mainHeading?: string | false;
 	pageSubtitle?: string;
 	banner?: string;
 	bannerBasePath?: string;
@@ -74,6 +76,7 @@ const lightBackgroundImages = backgroundWallpaper.lightSrc
 
 const {
 	title,
+	mainHeading = title || siteConfig.title,
 	pageSubtitle,
 	banner,
 	bannerBasePath,
@@ -345,6 +348,8 @@ const hasMultipleImages =
 </div>
 
 <!-- Wallpaper - 如果允许切换则始终渲染，否则只渲染当前模式 -->
+<!-- 独立外层供阅读模式隐藏，避免和壁纸脚本的内联 display 设置互相覆盖。 -->
+<div id="wallpaper-region" class="contents">
 {(isWallpaperSwitchable || isBannerMode || isFullscreenMode || isOverlayMode) && (
 <div id="wallpaper-wrapper" class:list={[
 	`absolute z-10 w-full transition duration-700 overflow-hidden ${mobileNonHomeBannerClass}`,
@@ -377,8 +382,8 @@ const hasMultipleImages =
                     position={backgroundWallpaper.banner?.position}
                     widths={[640, 1080]}
                     sizes="100vw"
-                    loading={index === 0 ? "eager" : "lazy"}
-                    fetchpriority={index === 0 ? "high" : undefined}
+                    loading="lazy"
+                    fetchpriority="low"
                     quality={mobileQuality}
                 />
             </div>
@@ -393,8 +398,8 @@ const hasMultipleImages =
                     position={backgroundWallpaper.banner?.position}
                     widths={[1280, 1920]}
                     sizes="100vw"
-                    loading={index === 0 ? "eager" : "lazy"}
-                    fetchpriority={index === 0 ? "high" : undefined}
+                    loading="lazy"
+                    fetchpriority="low"
                     quality={configQuality}
                 />
             </div>
@@ -413,7 +418,7 @@ const hasMultipleImages =
                     widths={[640, 1080]}
                     sizes="100vw"
                     loading="lazy"
-                    fetchpriority="high"
+                    fetchpriority="low"
                     quality={mobileQuality}
                 />
             </div>
@@ -429,7 +434,7 @@ const hasMultipleImages =
                     widths={[1280, 1920]}
                     sizes="100vw"
                     loading="lazy"
-                    fetchpriority="high"
+                    fetchpriority="low"
                     quality={configQuality}
                 />
             </div>
@@ -473,6 +478,17 @@ const hasMultipleImages =
     )}
 
     <!-- 壁纸轮播脚本（基于 CSS transition） -->
+    <script is:inline>
+        (function prioritizeVisibleBanner() {
+            // 主题已在页头设置。只提升当前设备、当前主题可见的壁纸，隐藏图片继续懒加载。
+            const images = document.getElementById("wallpaper-wrapper")?.querySelectorAll("img") || [];
+            const visibleImage = Array.from(images).find((image) => image.getClientRects().length > 0);
+            if (visibleImage) {
+                visibleImage.setAttribute("fetchpriority", "high");
+                visibleImage.setAttribute("loading", "eager");
+            }
+        })();
+    </script>
     {hasMultipleImages && (
     <script is:inline data-swup-ignore-script>
         (function initBannerCarousel() {
@@ -880,9 +896,10 @@ const hasMultipleImages =
     <div id="banner-dim-container" class="hidden"></div>
 </>
 )}
+</div>
 
 <!-- Main content -->
-<div class={`absolute w-full z-30 pointer-events-none ${mobileNonHomeBannerClass ? 'mobile-main-no-banner' : ''} ${!(isBannerMode && isBackgroundEnabled) ? 'no-banner-layout' : ''}`} style={isFullscreenMode ? 'top: 0;' : `top: ${finalMainPanelTop}`}>
+<div id="main-content-layout" class={`absolute w-full z-30 pointer-events-none ${mobileNonHomeBannerClass ? 'mobile-main-no-banner' : ''} ${!(isBannerMode && isBackgroundEnabled) ? 'no-banner-layout' : ''}`} style={isFullscreenMode ? 'top: 0;' : `top: ${finalMainPanelTop}`}>
     <!-- The pointer-events-none here prevent blocking the click event of the TOC -->
     <div class="relative w-full xl:w-[92vw] max-w-(--page-width) mx-auto pointer-events-auto">
         <div id="main-grid"
@@ -927,7 +944,7 @@ const hasMultipleImages =
             )}
                     
             {/* 主内容区包装器 - 包含静态栏位和swup容器，作为单个grid item */}
-            <div class={staticBarClass}>
+            <div id="main-content-column" class={staticBarClass}>
                 {/* 分类导航栏 - 全站渲染并显示 */}
                 {shouldRenderCategoryBar && <div id="category-bar-wrapper"><CategoryBar currentPostCategory={postCategory} /></div>}
                 {/* 主内容区 - 始终渲染，确保 Swup 容器存在 */}
@@ -938,8 +955,8 @@ const hasMultipleImages =
                 >
                 {/* 携带网格布局类名，用于JS更新父容器 */}
                 <div id="grid-class-carrier" data-grid-class={gridCols} class="hidden"></div>
-                {/* 为每个页面提供一个隐藏的h1标题，用于SEO和可访问性 */}
-                <h1 class="sr-only">{title}</h1>
+                {/* 正文没有一级标题时才补上，首页使用站点名而不是空标题。 */}
+                {mainHeading !== false && <h1 class="sr-only">{mainHeading}</h1>}
                 <div id="content-wrapper" class="onload-animation transition-leaving">
                     <slot></slot>
                 </div>

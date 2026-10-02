@@ -375,35 +375,38 @@ if (document.readyState === 'loading') {
 {
     import.meta.env.PROD && (
         <script is:inline data-swup-ignore-script define:vars={{ scriptUrl: url('/pagefind/pagefind.js') }}>
-            {/* 你的 loadPagefind 函数的完整内容放在这里 */}
-            async function loadPagefind() {
-                try {
-                    const response = await fetch(scriptUrl, { method: 'HEAD' });
-                    if (!response.ok) {
-                        throw new Error(`Pagefind script not found: ${response.status}`);
+            // 两个搜索界面共用一次下载；不搜索时不加载索引。
+            if (!window.loadPagefind) {
+                let pending;
+                let failedLoads = 0;
+                window.loadPagefind = async function loadPagefind(retry = false) {
+                    const previous = retry ? window.pagefind : undefined;
+                    if (previous) {
+                        // 索引、WASM 和结果片段也会缓存失败；按钮重试时重建引擎。
+                        window.pagefind = undefined;
+                        pending = undefined;
                     }
-                    const pagefind = await import(scriptUrl);
-                    await pagefind.options({
-                        excerptLength: 20
-                    });
-                    window.pagefind = pagefind;
-                    document.dispatchEvent(new CustomEvent('pagefindready'));
-                    console.log('Pagefind loaded and initialized successfully, event dispatched.');
-                } catch (error) {
-                    console.error('Failed to load Pagefind:', error);
-                    window.pagefind = {
-                        search: () => Promise.resolve({ results: [] }),
-                        options: () => Promise.resolve(),
-                    };
-                    document.dispatchEvent(new CustomEvent('pagefindloaderror'));
-                    console.log('Pagefind load error, event dispatched.');
-                }
-            }
-
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', loadPagefind);
-            } else {
-                loadPagefind();
+                    if (window.pagefind) return window.pagefind;
+                    if (pending) return pending;
+                    pending = (async () => {
+                        try {
+                            if (previous) await previous.destroy();
+                            const response = await fetch(scriptUrl, { method: "HEAD" });
+                            if (!response.ok) throw new Error(`Pagefind unavailable: ${response.status}`);
+                            // 浏览器会缓存失败的模块导入；重试换一个 URL，真正重新下载。
+                            const moduleUrl = failedLoads ? `${scriptUrl}?retry=${failedLoads}` : scriptUrl;
+                            const pagefind = await import(moduleUrl);
+                            await pagefind.options({ excerptLength: 20 });
+                            window.pagefind = pagefind;
+                            return pagefind;
+                        } catch (error) {
+                            failedLoads++;
+                            pending = undefined;
+                            throw error; // 交给界面显示失败，不能伪装成“没有结果”。
+                        }
+                    })();
+                    return pending;
+                };
             }
         </script>
     )

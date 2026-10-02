@@ -14,7 +14,9 @@ export let description = "";
 let keyword = "";
 let results: SearchResult[] = [];
 let isSearching = false;
-let initialized = false;
+let searchFailed = false;
+let searchRequest = 0;
+let debounceTimer: NodeJS.Timeout;
 
 // 在客户端获取 URL 参数
 const getInitialKeyword = (): string => {
@@ -40,71 +42,62 @@ const fakeResult: SearchResult[] = [
 ];
 
 // --- Core Search Logic ---
-const search = async () => {
-	if (!initialized || !keyword.trim()) {
+const search = async (retry = false) => {
+	const request = ++searchRequest;
+	const query = keyword.trim();
+	searchFailed = false;
+	if (!query) {
 		results = [];
+		isSearching = false;
 		return;
 	}
 	isSearching = true;
 
 	try {
-		if (import.meta.env.PROD && window.pagefind) {
-			const response = await window.pagefind.search(keyword);
+		let searchResults: SearchResult[] = [];
+		if (import.meta.env.PROD) {
+			const pagefind = await window.loadPagefind?.(retry);
+			if (!pagefind) throw new Error("搜索加载入口不可用");
+			const response = await pagefind.search(query);
 			const rawResults = await Promise.all(
 				response.results.map((item) => item.data()),
 			);
-			results = rawResults;
+			searchResults = rawResults;
 		} else if (import.meta.env.DEV) {
 			// 开发模式下的模拟结果
-			results = fakeResult.filter(
+			searchResults = fakeResult.filter(
 				(item) =>
-					item.excerpt.toLowerCase().includes(keyword.toLowerCase()) ||
-					item.meta.title.toLowerCase().includes(keyword.toLowerCase()),
+					item.excerpt.toLowerCase().includes(query.toLowerCase()) ||
+					item.meta.title.toLowerCase().includes(query.toLowerCase()),
 			);
 		}
+		if (request === searchRequest) results = searchResults;
 	} catch (error) {
+		if (request !== searchRequest) return;
 		console.error("Search error:", error);
 		results = [];
+		searchFailed = true;
 	} finally {
-		isSearching = false;
+		if (request === searchRequest) isSearching = false;
 	}
 };
 
 // --- Initialization onMount ---
 onMount(() => {
-	const initialize = async () => {
-		initialized = true;
-
-		// 从 URL 获取初始关键词
-		const initialKeyword = getInitialKeyword();
-		if (initialKeyword) {
-			keyword = initialKeyword;
-		}
-
-		// 如果有关键词，自动执行搜索
-		if (keyword.trim()) {
-			await search();
-		}
+	keyword = getInitialKeyword();
+	if (keyword.trim()) search();
+	return () => {
+		clearTimeout(debounceTimer);
+		searchRequest++;
 	};
-
-	// 开发环境直接初始化
-	if (import.meta.env.DEV) {
-		initialize();
-	} else {
-		// 生产环境等待 Pagefind 加载
-		if (window.pagefind) {
-			initialize();
-		} else {
-			document.addEventListener("pagefindready", initialize, {
-				once: true,
-			});
-		}
-	}
 });
 
-let debounceTimer: NodeJS.Timeout;
 const handleInput = () => {
 	clearTimeout(debounceTimer);
+	// 新输入立即淘汰旧请求，不等 300ms 后才取消旧结果。
+	searchRequest++;
+	searchFailed = false;
+	isSearching = true;
 	debounceTimer = setTimeout(() => {
 		search();
 	}, 300);
@@ -139,6 +132,7 @@ const handleInput = () => {
                 type="text"
                 class="block w-full p-4 pl-10 text-sm bg-transparent border border-black/10 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-(--primary) focus:border-(--primary) hover:border-black/20 dark:hover:border-white/20 text-75 placeholder:opacity-50 transition-colors outline-hidden"
                 placeholder={i18n(I18nKey.search)}
+                aria-label={i18n(I18nKey.search)}
                 bind:value={keyword}
                 on:input={handleInput}
             >
@@ -152,6 +146,11 @@ const handleInput = () => {
         {#if isSearching}
             <div class="flex justify-center py-10">
                 <Icon icon="svg-spinners:ring-resize" class="text-4xl text-(--primary)" />
+            </div>
+        {:else if searchFailed}
+            <div role="alert" class="card-base p-10 text-center text-75 rounded-(--radius-large)">
+                <p>搜索暂时不可用，请检查网络后重试。</p>
+                <button class="btn-regular rounded-lg px-4 py-2 mt-3" on:click={() => search(true)}>重试</button>
             </div>
         {:else if results.length > 0}
             <div class="space-y-4">
