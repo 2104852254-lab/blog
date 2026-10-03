@@ -23,38 +23,95 @@ const config = {
 };
 ---
 
-<div id="giscus-comments" class="giscus" data-config={JSON.stringify(config)}></div>
+<div id="giscus-comments" class="min-h-1" data-config={JSON.stringify(config)}></div>
+<button id="load-giscus-comments" class="btn-regular rounded-lg px-4 py-2 mt-3">加载评论</button>
 <p class="mt-4 text-sm text-(--content-meta)">
   评论需要 GitHub 登录；如果加载失败，也可以
   <a class="underline text-(--primary)" href={`https://github.com/${giscus.repo}/discussions`} target="_blank" rel="noopener noreferrer">前往 GitHub 讨论</a>。
 </p>
 
 <script is:inline>
-  // 使用官方脚本，不经过第三方模块 CDN；切换文章时重新挂载，清理旧主题监听。
+  // 评论靠近视口才请求官方脚本；手动入口兼容无 IntersectionObserver 的浏览器。
   (() => {
+    window.cleanupGiscus?.();
     const container = document.getElementById("giscus-comments");
-    if (!container || container.querySelector("script")) return;
+    const button = document.getElementById("load-giscus-comments");
+    if (!container || !button) return;
+    let disposed = false;
+    let loading = false;
+    let visibilityObserver;
+    let themeObserver;
+    // 只有正在执行的客户端可使用这个全局类名；避免慢网络下上一篇覆盖下一篇。
+    container.classList.remove("giscus");
     const getTheme = () => document.documentElement.classList.contains("dark") ? "dark_dimmed" : "light";
-    const script = document.createElement("script");
-    script.src = "https://giscus.app/client.js";
-    script.async = true;
-    script.crossOrigin = "anonymous";
-    const config = JSON.parse(container.dataset.config);
-    // 动态页内嵌评论仍按单条动态归属；普通文章不允许查询参数改变评论归属。
-    const requestedPath = new URLSearchParams(location.search).get("path");
-    if (config.term === "/dynamic/" && requestedPath?.startsWith("/dynamic/") && requestedPath.length <= 512) {
-      config.term = requestedPath;
+    function load() {
+      if (disposed || loading || !container.isConnected) return;
+      loading = true;
+      button.disabled = true;
+      button.textContent = "评论加载中…";
+      visibilityObserver?.disconnect();
+      themeObserver?.disconnect();
+      container.querySelector("script")?.remove();
+      // 移除 script 不能保证取消已下载的代码，所以新文章等待旧请求执行/失败后再挂载。
+      window.giscusPending = (window.giscusPending || Promise.resolve()).then(() => {
+        if (disposed || !container.isConnected) return;
+        return new Promise((resolve) => {
+          container.classList.add("giscus");
+          const script = document.createElement("script");
+          script.src = "https://giscus.app/client.js";
+          script.async = true;
+          script.crossOrigin = "anonymous";
+          const config = JSON.parse(container.dataset.config);
+          const requestedPath = new URLSearchParams(location.search).get("path");
+          if (config.term === "/dynamic/" && requestedPath?.startsWith("/dynamic/") && requestedPath.length <= 512) config.term = requestedPath;
+          for (const [name, value] of Object.entries(config)) script.setAttribute(`data-${name}`, value);
+          script.setAttribute("data-theme", getTheme());
+          script.addEventListener("load", () => {
+            if (!disposed) {
+              loading = false;
+              button.disabled = false;
+              // 即使脚本下载成功，嵌入的评论窗口也可能失败，始终保留重新加载入口。
+              button.textContent = "重新加载评论";
+            }
+            resolve();
+          });
+          script.addEventListener("error", () => {
+            if (!disposed) {
+              script.remove();
+              container.classList.remove("giscus");
+              themeObserver?.disconnect();
+              themeObserver = undefined;
+              loading = false;
+              button.disabled = false;
+              button.hidden = false;
+              button.textContent = "重新加载评论";
+            }
+            resolve();
+          });
+          container.appendChild(script);
+          themeObserver = new MutationObserver(() => {
+            if (!disposed) container.querySelector("iframe")?.contentWindow?.postMessage({ giscus: { setConfig: { theme: getTheme() } } }, "https://giscus.app");
+          });
+          themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+        });
+      });
     }
-    for (const [name, value] of Object.entries(config)) {
-      script.setAttribute(`data-${name}`, value);
+    function cleanup() {
+      disposed = true;
+      container.classList.remove("giscus");
+      visibilityObserver?.disconnect();
+      themeObserver?.disconnect();
+      button.removeEventListener("click", load);
+      document.removeEventListener("astro:before-swap", cleanup);
     }
-    script.setAttribute("data-theme", getTheme());
-    container.appendChild(script);
-
-    window.giscusThemeObserver?.disconnect();
-    window.giscusThemeObserver = new MutationObserver(() => {
-      container.querySelector("iframe")?.contentWindow?.postMessage({ giscus: { setConfig: { theme: getTheme() } } }, "https://giscus.app");
-    });
-    window.giscusThemeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    window.cleanupGiscus = cleanup;
+    button.addEventListener("click", load);
+    document.addEventListener("astro:before-swap", cleanup);
+    if ("IntersectionObserver" in window) {
+      visibilityObserver = new IntersectionObserver((entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) load();
+      }, { rootMargin: "200px" });
+      visibilityObserver.observe(container);
+    }
   })();
 </script>

@@ -20,6 +20,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # 构建与产物检查使用相同目标路径，只有全部通过才上传。
+    env:
+      DEPLOY_TARGET: github-pages
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,14 +39,20 @@ jobs:
           run_install: false
           
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
+
+      - name: Check source
+        run: |
+          pnpm check
+          pnpm type-check
       
       - name: Build site
         # GitHub Pages 不是根域名站点；构建时明确让 Astro 使用 /blog/ 路径。
         # 这个变量只在 GitHub Actions 中设置，不会影响 Vercel 的根路径构建。
-        env:
-          DEPLOY_TARGET: github-pages
         run: pnpm run build
+
+      - name: Check output and interactions
+        run: pnpm test
 
       - name: Create .nojekyll file
         run: touch dist/.nojekyll

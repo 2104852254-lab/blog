@@ -52,6 +52,7 @@ const bannerPostMeta = {
 	description: entry.data.description,
 	published: entry.data.published,
 	updated: entry.data.updated,
+	tags: entry.data.tags,
 	words: remarkPluginFrontmatter.words,
 	minutes: remarkPluginFrontmatter.minutes,
 };
@@ -93,24 +94,6 @@ const posterAvatarSelector = profileConfig.avatar
 
 dayjs.extend(utc);
 
-const jsonLd = {
-	"@context": "https://schema.org",
-	"@type": "BlogPosting",
-	headline: entry.data.title,
-	description: entry.data.description || entry.data.title,
-	keywords: entry.data.tags,
-	author: {
-		"@type": "Person",
-		name: entry.data.author || profileConfig.name,
-		url: Astro.site,
-	},
-	datePublished: formatDateToYYYYMMDD(entry.data.published),
-	inLanguage: entry.data.lang
-		? entry.data.lang.replace("_", "-")
-		: siteConfig.lang.replace("_", "-"),
-	// TODO include cover image here
-};
-
 const relatedPosts = await getRelatedPosts(entry, 5);
 ---
 
@@ -131,12 +114,6 @@ const relatedPosts = await getRelatedPosts(entry, 5);
   <!-- KaTeX 按需加载 - 仅在文章页面 -->
   <KatexManager slot="head" />
   
-  <script
-    is:inline
-    slot="head"
-    type="application/ld+json"
-    set:html={JSON.stringify(jsonLd)}
-  />
   <div
     class="post-article-wrapper flex w-full rounded-(--radius-large) overflow-hidden relative mb-4"
   >

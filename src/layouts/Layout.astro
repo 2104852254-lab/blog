@@ -30,6 +30,7 @@ import {
 } from "@/constants/constants";
 import { defaultFavicons } from "@/constants/icon";
 import type { Favicon } from "@/types/config";
+import { buildArticleMetadata } from "@/utils/article-metadata";
 import { isHomePage } from "@/utils/layout-utils";
 import { url } from "@/utils/url-utils";
 
@@ -48,6 +49,7 @@ interface Props {
 	lang?: string;
 	setOGTypeArticle?: boolean;
 	postSlug?: string;
+	articleMetadata?: { published: Date; updated?: Date; tags?: string[] };
 }
 
 let {
@@ -59,6 +61,7 @@ let {
 	lang,
 	setOGTypeArticle,
 	postSlug,
+	articleMetadata,
 } = Astro.props;
 
 // apply a class to the body element to decide the height of the banner, only used for initial page load
@@ -138,6 +141,29 @@ if (!lang) {
 }
 const siteLang = lang.replace("_", "-");
 
+// 分享图与文章结构化数据在同一处生成，避免重复优化图片和双平台地址分歧。
+const articleJsonLd =
+	setOGTypeArticle && articleMetadata
+		? buildArticleMetadata({
+				title: title || siteConfig.title,
+				description,
+				author: author || profileConfig.name,
+				authorUrl: new URL(
+					"about/",
+					(siteConfig.canonical_url || siteConfig.site_url).replace(
+						/\/?$/,
+						"/",
+					),
+				).href,
+				canonicalUrl,
+				published: articleMetadata.published,
+				updated: articleMetadata.updated,
+				tags: articleMetadata.tags,
+				lang: siteLang,
+				imageUrl: ogImageUrl,
+			})
+		: undefined;
+
 // 使用固定的banner偏移量，position配置用于图片定位
 ---
 
@@ -214,6 +240,9 @@ const siteLang = lang.replace("_", "-");
     />
 
     <meta name="viewport" content="width=device-width" />
+    {articleJsonLd && (
+      <script is:inline type="application/ld+json" set:html={JSON.stringify(articleJsonLd).replace(/</g, "\\u003c")} />
+    )}
     <meta name="generator" content={Astro.generator} />
     {
       favicons.map((favicon) => (
@@ -625,6 +654,16 @@ const siteLang = lang.replace("_", "-");
     ]}
   >
 
+    <a id="skip-to-content" href="#swup-container" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] rounded-lg px-4 py-3 bg-(--card-bg) text-(--primary) border border-(--primary)">跳到正文</a>
+    <script is:inline>
+      // 焦点实际进入正文，而不只是滚动到锚点；链接在 Swup 替换区外常驻。
+      document.getElementById("skip-to-content")?.addEventListener("click", (event) => {
+        const main = document.getElementById("swup-container");
+        if (!main) return;
+        event.preventDefault();
+        main.focus();
+      });
+    </script>
     <div id="progress-bar"></div>
 
     {/* 卡片样式：根据 localStorage 覆盖默认配置 */}
@@ -879,18 +918,9 @@ function disableAnimation() {
     "nav-menu-panel",
     "nav-menu-switch",
   ]);
-  setClickOutsideToClose("search-panel", [
-    "search-panel",
-    "search-bar",
-    "search-switch",
-  ]);
   setClickOutsideToClose("wallpaper-mode-panel", [
     "wallpaper-mode-panel",
     "wallpaper-mode-switch",
-  ]);
-  setClickOutsideToClose("theme-mode-panel", [
-    "theme-mode-panel",
-    "scheme-switch",
   ]);
 
   function initCustomScrollbar() {

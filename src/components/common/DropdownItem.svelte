@@ -11,6 +11,7 @@ interface Props {
 	class?: string;
 	onclick?: (event: MouseEvent) => void;
 	role?: string;
+	"aria-checked"?: boolean;
 	children?: Snippet;
 }
 

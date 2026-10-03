@@ -94,42 +94,5 @@ assert.equal(recovered, sharedRetry);
 assert.equal((await recovered.search("平衡车")).results.length, 1);
 assert.equal(requests, 3);
 
-// 重试按钮更新为加载状态后会离开 DOM；点击仍属于原搜索面板，不能被误关。
-const layout = readFileSync("src/layouts/Layout.astro", "utf8");
-const outsideClose = layout
-	.match(
-		/function setClickOutsideToClose\(panel: string, ignores: string\[\]\) \{[\s\S]*?\n {2}\}/,
-	)[0]
-	.replace("panel: string, ignores: string[]", "panel, ignores");
-let onClick;
-let closed = false;
-class Node {}
-const detachedButton = new Node();
-const panel = {
-	contains: () => false,
-	classList: {
-		add: () => {
-			closed = true;
-		},
-	},
-};
-const panelContext = createContext({
-	Node,
-	document: {
-		getElementById: (id) => (id === "search-panel" ? panel : null),
-		addEventListener: (_, handler) => {
-			onClick = handler;
-		},
-	},
-});
-new Script(
-	`${outsideClose}; setClickOutsideToClose("search-panel", ["search-panel"]);`,
-).runInContext(panelContext);
-onClick({
-	target: detachedButton,
-	composedPath: () => [detachedButton, panel],
-});
-assert.equal(closed, false, "重试按钮移出 DOM 不应误触发关闭面板");
-onClick({ target: new Node(), composedPath: () => [] });
-assert.equal(closed, true, "真实外部点击仍应关闭面板");
+// 面板内点击和键盘重试焦点已由 check-panel-controls.mjs 检查真实的新控制器。
 console.log("✓ 搜索下载/索引失败、并发重试和成功缓存");

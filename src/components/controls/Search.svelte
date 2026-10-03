@@ -5,6 +5,10 @@ import { navigateToPage } from "@utils/navigation-utils";
 import { onMount } from "svelte";
 import Icon from "@/components/common/Icon.svelte";
 import type { SearchResult } from "@/global";
+import {
+	createPanelController,
+	type PanelController,
+} from "@/utils/panel-controls";
 import { url as formatUrl, getSearchUrl } from "@/utils/url-utils";
 
 // --- State ---
@@ -16,6 +20,11 @@ let searchFailed = false;
 let searchRequest = 0;
 let activeDesktop = true;
 let debounceTimer: NodeJS.Timeout;
+let panelControl: PanelController | undefined;
+let desktopInput: HTMLInputElement;
+let mobileInput: HTMLInputElement;
+let searchButton: HTMLButtonElement;
+let searchPanel: HTMLDivElement;
 
 // --- Mocks for Dev Mode ---
 const fakeResult: SearchResult[] = [
@@ -33,29 +42,22 @@ const fakeResult: SearchResult[] = [
 ];
 
 // --- UI Logic ---
-const togglePanel = () => {
-	document
-		.getElementById("search-panel")
-		?.classList.toggle("float-panel-closed");
-};
-
 const setPanelVisibility = (show: boolean): void => {
-	const panel = document.getElementById("search-panel");
-	if (!panel) return;
-	show
-		? panel.classList.remove("float-panel-closed")
-		: panel.classList.add("float-panel-closed");
+	panelControl?.setOpen(show);
 };
 
-const closeSearchPanel = (): void => {
+const resetSearch = (): void => {
 	clearTimeout(debounceTimer);
 	searchRequest++;
 	isSearching = false;
 	searchFailed = false;
-	document.getElementById("search-panel")?.classList.add("float-panel-closed");
 	keywordDesktop = "";
 	keywordMobile = "";
 	result = [];
+};
+const closeSearchPanel = (): void => {
+	resetSearch();
+	setPanelVisibility(false);
 };
 
 const handleResultClick = (event: Event, url: string): void => {
@@ -65,6 +67,15 @@ const handleResultClick = (event: Event, url: string): void => {
 };
 
 // --- Core Search Logic ---
+const retrySearch = (): void => {
+	(activeDesktop ? desktopInput : mobileInput).focus({ preventScroll: true });
+	void search(
+		activeDesktop ? keywordDesktop : keywordMobile,
+		activeDesktop,
+		true,
+	);
+};
+
 const search = async (
 	keyword: string,
 	isDesktop: boolean,
@@ -75,7 +86,8 @@ const search = async (
 	activeDesktop = isDesktop;
 	searchFailed = false;
 	if (!keyword.trim()) {
-		setPanelVisibility(false);
+		// 手机清空输入仍能继续打字；桌面无关键词时收起结果。
+		setPanelVisibility(!isDesktop);
 		result = [];
 		isSearching = false;
 		return;
@@ -116,7 +128,19 @@ const search = async (
 
 // 离开页面时取消防抖，并让仍在下载的旧请求失效。
 onMount(() => {
+	const desktopBar = document.getElementById("search-bar");
+	panelControl = createPanelController(searchPanel, {
+		trigger: searchButton,
+		ignore: desktopBar ? [desktopBar] : [],
+		focusOnOpen: () => {
+			activeDesktop = false;
+			return mobileInput;
+		},
+		returnFocus: () => (activeDesktop ? desktopInput : searchButton),
+		onClose: resetSearch,
+	});
 	return () => {
+		panelControl?.destroy();
 		clearTimeout(debounceTimer);
 		searchRequest++;
 	};
@@ -130,7 +154,7 @@ onMount(() => {
 ">
     <Icon icon="material-symbols:search"
           class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-black/30 dark:text-white/30"></Icon>
-    <input placeholder="{i18n(I18nKey.search)}" bind:value={keywordDesktop}
+    <input placeholder="{i18n(I18nKey.search)}" bind:value={keywordDesktop} bind:this={desktopInput}
            aria-label={i18n(I18nKey.search)}
            on:input={(event) => search(event.currentTarget.value, true)}
            on:focus={() => search(keywordDesktop, true)}
@@ -140,13 +164,13 @@ onMount(() => {
 </div>
 
 <!-- toggle btn for phone/tablet view -->
-<button on:click={togglePanel} aria-label="Search Panel" id="search-switch"
+<button bind:this={searchButton} aria-label={i18n(I18nKey.search)} aria-expanded="false" aria-controls="search-panel" id="search-switch"
         class="btn-plain scale-animation lg:hidden! rounded-lg w-9 h-9 md:w-11 md:h-11 active:scale-90">
     <Icon icon="material-symbols:search" class="text-[1.25rem]"></Icon>
 </button>
 
 <!-- search panel -->
-<div id="search-panel" class="float-panel float-panel-closed search-panel absolute md:w-120
+<div id="search-panel" bind:this={searchPanel} inert aria-hidden="true" class="float-panel float-panel-closed search-panel absolute md:w-120
 top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
 
     <!-- search bar inside panel for phone/tablet -->
@@ -156,7 +180,7 @@ top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
   ">
         <Icon icon="material-symbols:search"
               class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-black/30 dark:text-white/30"></Icon>
-        <input placeholder={i18n(I18nKey.search)} bind:value={keywordMobile}
+        <input placeholder={i18n(I18nKey.search)} bind:value={keywordMobile} bind:this={mobileInput}
                aria-label={i18n(I18nKey.search)}
                on:input={(event) => search(event.currentTarget.value, false)}
                class="pl-10 absolute inset-0 text-sm bg-transparent outline-0
@@ -173,7 +197,7 @@ top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
         <div role="alert" class="rounded-xl px-3 py-3 text-75">
             <p>搜索暂时不可用，请检查网络后重试。</p>
             <button class="btn-regular rounded-lg px-3 py-1 mt-2"
-                    on:click={() => search(activeDesktop ? keywordDesktop : keywordMobile, activeDesktop, true)}>重试</button>
+                    on:click={retrySearch}>重试</button>
         </div>
     {:else if result.length > 0}
         {#each result.slice(0, 5) as item}

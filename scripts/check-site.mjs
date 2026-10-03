@@ -32,6 +32,21 @@ function check(name, run) {
 	}
 }
 
+check("首个键盘入口可以跳到可聚焦的正文", () => {
+	const html = read("index.html");
+	assert.match(html, /<a\b[^>]*href="#swup-container"[^>]*>[^<]*跳到正文/);
+	assert.match(html, /<main\b[^>]*id="swup-container"[^>]*tabindex="-1"/);
+});
+check("关闭的搜索和主题面板不会进入键盘焦点序列", () => {
+	const html = read("index.html");
+	for (const id of ["search-panel", "theme-mode-panel"]) {
+		const panel = html.match(new RegExp(`<div\\b[^>]*id="${id}"[^>]*>`))?.[0];
+		assert.ok(panel, `${id} 不存在`);
+		assert.match(panel, /\binert(?:[\s=>])/, `${id} 关闭时应不可交互`);
+		assert.match(panel, /aria-hidden="true"/);
+	}
+});
+
 // 检查页面实际输出，而不是检查源码有没有某行文字。
 for (const route of ["", "about/"]) {
 	check(`${route || "首页"} 只有一个非空主标题`, () => {
@@ -150,6 +165,24 @@ for (const route of ["", ...postRoutes]) {
 		});
 	}
 	if (route.startsWith("posts/")) {
+		check(`${route} 文章结构化数据与主网址和封面一致`, () => {
+			const data = [
+				...html.matchAll(
+					/<script\b[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g,
+				),
+			]
+				.map(([, json]) => JSON.parse(json))
+				.find((item) => item["@type"] === "BlogPosting");
+			assert.ok(data, "缺少文章结构化数据");
+			assert.equal(data.url, `${canonicalRoot}${route}`);
+			assert.equal(data.mainEntityOfPage["@id"], data.url);
+			assert.equal(data.author.url, `${canonicalRoot}about/`);
+			const image = html.match(
+				/property="og:image"[^>]+content="([^"]+)"/,
+			)?.[1];
+			assert.equal(data.image, image);
+			assert.ok(data.headline && data.datePublished);
+		});
 		check(`${route} 提供沉浸阅读入口但不自动进入`, () => {
 			assert.ok(
 				html.includes('id="immersive-reading-toggle"'),

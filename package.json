@@ -6,6 +6,7 @@
     "dev": "astro dev",
     "start": "astro dev",
     "check": "astro check",
+    "test": "node scripts/run-checks.mjs",
     "build": "npx tsx scripts/generate-lqips.ts && astro build && npx tsx scripts/subset-fonts.ts && pagefind --site dist && node scripts/check-site.mjs",
     "preview": "astro preview",
     "astro": "astro",

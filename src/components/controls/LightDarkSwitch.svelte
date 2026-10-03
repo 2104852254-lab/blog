@@ -8,6 +8,10 @@ import Icon from "@/components/common/Icon.svelte";
 import { DARK_MODE, LIGHT_MODE, SYSTEM_MODE } from "@/constants/constants";
 import type { LIGHT_DARK_MODE } from "@/types/config.ts";
 import {
+	createPanelController,
+	type PanelController,
+} from "@/utils/panel-controls";
+import {
 	applyThemeToDocument,
 	getStoredTheme,
 	setTheme,
@@ -26,11 +30,15 @@ type WindowWithSwup = Window & { swup?: SwupInstance };
 
 let mode: LIGHT_DARK_MODE = $state(LIGHT_MODE);
 let displayedMode: LIGHT_DARK_MODE = $state(LIGHT_MODE); // 显示的实际主题（在system模式下会随系统变化）
+let panelControl: PanelController | undefined;
+let themeButton: HTMLButtonElement;
+let themePanel: HTMLDivElement;
 
 function switchScheme(newMode: LIGHT_DARK_MODE) {
 	mode = newMode;
 	setTheme(newMode);
 	updateDisplayedMode();
+	panelControl?.setOpen(false, true);
 }
 
 // 更新显示的主题（用于显示当前实际主题）
@@ -48,6 +56,10 @@ function updateDisplayedMode() {
 
 // 使用onMount确保在组件挂载后正确初始化
 onMount(() => {
+	panelControl = createPanelController(themePanel, {
+		trigger: themeButton,
+		menu: true,
+	});
 	// 立即获取并设置正确的主题
 	const storedTheme = getStoredTheme();
 	mode = storedTheme;
@@ -110,13 +122,14 @@ onMount(() => {
 
 	// 清理函数
 	return () => {
+		panelControl?.destroy();
 		window.removeEventListener("theme-change", handleThemeChange);
 	};
 });
 </script>
 
 <div class="relative z-50">
-    <button aria-label="Light/Dark Mode" aria-haspopup="menu" class="relative btn-plain scale-animation rounded-lg h-9 w-9 md:h-11 md:w-11 active:scale-90" id="scheme-switch">
+    <button bind:this={themeButton} aria-label="切换亮暗主题" aria-haspopup="menu" aria-expanded="false" aria-controls="theme-mode-panel" class="relative btn-plain scale-animation rounded-lg h-9 w-9 md:h-11 md:w-11 active:scale-90" id="scheme-switch">
         <div class="absolute inset-0 flex items-center justify-center" class:opacity-0={displayedMode !== LIGHT_MODE}>
             <Icon icon="material-symbols:wb-sunny-outline-rounded" class="text-[1.25rem]"></Icon>
         </div>
@@ -124,10 +137,11 @@ onMount(() => {
             <Icon icon="material-symbols:dark-mode-outline-rounded" class="text-[1.25rem]"></Icon>
         </div>
     </button>
-    <div id="theme-mode-panel" class="absolute transition float-panel-closed top-11 -right-2 pt-5 z-50" role="menu" aria-labelledby="scheme-switch">
+    <div id="theme-mode-panel" bind:this={themePanel} inert aria-hidden="true" class="absolute transition float-panel-closed top-11 -right-2 pt-5 z-50" role="menu" aria-labelledby="scheme-switch">
         <DropdownPanel>
             <DropdownItem
-                role="menuitem"
+                role="menuitemradio"
+                aria-checked={mode === LIGHT_MODE}
                 isActive={mode === LIGHT_MODE}
                 isLast={false}
                 onclick={() => switchScheme(LIGHT_MODE)}
@@ -136,7 +150,8 @@ onMount(() => {
                 {i18n(I18nKey.lightMode)}
             </DropdownItem>
             <DropdownItem
-                role="menuitem"
+                role="menuitemradio"
+                aria-checked={mode === DARK_MODE}
                 isActive={mode === DARK_MODE}
                 isLast={false}
                 onclick={() => switchScheme(DARK_MODE)}
@@ -145,7 +160,8 @@ onMount(() => {
                 {i18n(I18nKey.darkMode)}
             </DropdownItem>
             <DropdownItem
-                role="menuitem"
+                role="menuitemradio"
+                aria-checked={mode === SYSTEM_MODE}
                 isActive={mode === SYSTEM_MODE}
                 isLast={true}
                 onclick={() => switchScheme(SYSTEM_MODE)}
