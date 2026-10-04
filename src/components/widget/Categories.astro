@@ -31,7 +31,7 @@ const isCollapsed = collapseThreshold
         <ButtonLink
             url={c.url}
             badge={String(c.count)}
-            label={`View all posts in the ${c.name.trim()} category`}
+            label={`${c.name.trim()} ${c.count}`}
         >
             {c.name.trim()}
         </ButtonLink>

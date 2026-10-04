@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="970" viewBox="0 0 720 970" role="img" aria-labelledby="title description">
+  <title id="title">调试记录：观察、假设、只改一项、验证、记录</title>
+  <desc id="description">可填写的通用单变量调试流程模板。结果不符合预期时回到观察并保留失败证据，不代表任何具体项目已经完成验证。</desc>
+  <defs><marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto"><path d="M 1 1 L 10 6 L 1 11" fill="none" stroke="#223044" stroke-width="2"/></marker></defs>
+  <rect width="720" height="970" rx="18" fill="#f8fafc"/>
+  <g fill="#223044" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+    <text x="80" y="66" font-size="30" font-weight="700">调试记录 · 单变量验证</text>
+    <text x="80" y="101" font-size="18">通用流程模板 · 填写自己的现象、证据与结果</text>
+    <rect x="80" y="120" width="560" height="110" rx="12" fill="#e8f1ff" stroke="#223044" stroke-width="2"/>
+    <text x="104" y="155" font-size="20" font-weight="700">01  观察 · OBSERVE</text>
+    <text x="104" y="181" font-size="20">现象：[填写] · 条件：[填写]</text>
+    <text x="104" y="207" font-size="20">证据：[日志 / 截图 / 测量]</text>
+    <path d="M 360 236 v 38" stroke="#223044" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+    <rect x="80" y="280" width="560" height="110" rx="12" fill="#efeafe" stroke="#223044" stroke-width="2"/>
+    <text x="104" y="315" font-size="20" font-weight="700">02  假设 · HYPOTHESIS</text>
+    <text x="104" y="341" font-size="20">可能原因：[填写]</text>
+    <text x="104" y="367" font-size="20">预期结果：[可验证的变化]</text>
+    <path d="M 360 396 v 38" stroke="#223044" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+    <rect x="80" y="440" width="560" height="110" rx="12" fill="#fff0da" stroke="#223044" stroke-width="2"/>
+    <text x="104" y="475" font-size="20" font-weight="700">03  只改一项 · ONE CHANGE</text>
+    <text x="104" y="501" font-size="20">本次改动：[填写一个变量]</text>
+    <text x="104" y="527" font-size="20">保持不变：[条件 / 版本 / 参数]</text>
+    <path d="M 360 556 v 38" stroke="#223044" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+    <rect x="80" y="600" width="560" height="110" rx="12" fill="#e4f5eb" stroke="#223044" stroke-width="2"/>
+    <text x="104" y="635" font-size="20" font-weight="700">04  验证 · VERIFY</text>
+    <text x="104" y="661" font-size="20">重复条件：[同样的操作 / 测量]</text>
+    <text x="104" y="687" font-size="20">实际结果：[对照预期，写出数据]</text>
+    <path d="M 360 716 v 38" stroke="#223044" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+    <rect x="80" y="760" width="560" height="110" rx="12" fill="#e7eef6" stroke="#223044" stroke-width="2"/>
+    <text x="104" y="795" font-size="20" font-weight="700">05  记录 · RECORD</text>
+    <text x="104" y="821" font-size="20">结论：[支持 / 不支持 / 尚不确定]</text>
+    <text x="104" y="847" font-size="20">留下：[改动、证据、下一步]</text>
+    <text x="80" y="920" font-size="18">结果不符？回到观察，保留失败证据。</text>
+  </g>
+</svg>

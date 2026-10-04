@@ -42,8 +42,57 @@ jobs:
         run: |
           pnpm check
           pnpm type-check
+      - name: Install test browser
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Check public article references
+        # 临时文章只用于检查；后续正式构建会恢复真实内容的 dist。
+        env:
+          PLAYWRIGHT_HTML_OUTPUT_DIR: reports/article-link-browser
+        run: pnpm test:article-links:browser
       - name: Build complete site
         # 运行项目完整流程，而不只运行 astro build；包含搜索索引和最终链接检查。
         run: pnpm build
       - name: Check output and interactions
         run: pnpm test
+      - name: Check desktop, mobile and accessibility
+        run: pnpm test:browser
+      - name: Collect local performance report
+        # 分数低于基线只警告；运行失败仍然是检查失败。
+        if: always() && !cancelled()
+        run: pnpm audit:performance
+      - name: Check internal resources and links
+        if: always() && !cancelled()
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2
+        with:
+          lycheeVersion: v0.24.2
+          args: >-
+            --config lychee.toml --scheme file --offline
+            --root-dir '${{ github.workspace }}/dist'
+            ${{ matrix.target == 'github-pages' && format('--remap ''file://{0}/dist/blog/?$ file://{0}/dist/''', github.workspace) || '' }}
+            ${{ matrix.target == 'github-pages' && format('--remap ''file://{0}/dist/blog/(.*) file://{0}/dist/$1''', github.workspace) || '' }}
+            --index-files index.html --fallback-extensions html
+            --include-fragments=anchor-only --no-ignore --no-progress
+            'dist/**/*.html'
+          output: reports/internal-links.md
+      - name: Check public external references
+        if: always() && !cancelled() && matrix.target == 'vercel'
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2
+        with:
+          lycheeVersion: v0.24.2
+          args: >-
+            --config lychee.toml --base-url=https://blog-seven-tau-84.vercel.app/
+            --no-ignore --no-progress README.md 'dist/**/*.html'
+          output: reports/links.md
+          # 403/429/超时等需要复核，不阻止发布；失败明细进入附件及任务摘要。
+          fail: false
+      - name: Save inspection reports
+        if: always() && !cancelled()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: site-checks-${{ matrix.target }}
+          path: |
+            playwright-report/
+            test-results/
+            reports/
+          retention-days: 14
+          if-no-files-found: warn

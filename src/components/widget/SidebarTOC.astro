@@ -48,7 +48,6 @@ const items = encrypted ? [] : computeTocItems(headings, { maxLevel: 3 });
               href={item.href}
               class={`toc-item toc-level-${item.depthLevel}`}
               data-heading-id={item.headingId}
-              aria-label={item.text}
               title={item.text}
             >
               <div class={`toc-badge ${item.badgeKind === "index" ? "toc-badge-index" : ""}`}>
@@ -60,6 +59,7 @@ const items = encrypted ? [] : computeTocItems(headings, { maxLevel: 3 });
                   <span class="toc-badge-dot toc-badge-dot-sm"></span>
                 )}
               </div>
+              {" "}
               <div class={`toc-label ${item.labelPrimary ? "toc-label-primary" : "toc-label-secondary"}`}>
                 {item.text}
               </div>

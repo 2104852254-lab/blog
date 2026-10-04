@@ -40,7 +40,12 @@ type ContentCollection<T> = CollectionConfig<
 >;
 
 const postsCollection: ContentCollection<PostData> = defineCollection({
-	loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/posts" }),
+	// 引用卡片依赖其他文章的元数据，不能沿用只由来源 digest 决定的旧 HTML。
+	loader: glob({
+		pattern: "**/*.{md,mdx}",
+		base: "./src/content/posts",
+		deferRender: true,
+	}),
 	schema: z.object({
 		title: z.string(),
 		published: z.date(),

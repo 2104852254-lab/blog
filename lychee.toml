@@ -1,0 +1,14 @@
+# 仅检查发布内容中的外部 HTTP(S) 地址；站内路径由离线检查和浏览器验证。
+# 外站返回 403/429、超时、证书错误时照样记录，不假装是成功；CI 只提示复核。
+max_concurrency = 4
+timeout = 20
+max_retries = 2
+retry_wait_time = 2
+scheme = ["https", "http"]
+exclude_all_private = true
+include_mail = false
+include_verbatim = false
+exclude = [
+  '^https://blog-seven-tau-84\.vercel\.app(?:/|$)',
+  '^https://2104852254-lab\.github\.io/blog(?:/|$)',
+]

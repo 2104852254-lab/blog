@@ -2,6 +2,8 @@
 import { spawnSync } from "node:child_process";
 
 const checks = [
+	["scripts/check-writing-tools.mjs"],
+	["scripts/check-article-links.mjs"],
 	["scripts/check-site.mjs"],
 	["scripts/check-panel-controls.mjs"],
 	["scripts/check-article-metadata.mjs"],

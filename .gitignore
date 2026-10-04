@@ -41,3 +41,11 @@ package/
 .codex*
 .claude
 .mimocode
+
+# 本地/CI 检查报告，不作为网站资源发布。
+.scratch/
+playwright-report/
+test-results/
+.lighthouseci/
+reports/
+.lycheecache

@@ -3,6 +3,7 @@ import type { CollectionEntry } from "astro:content";
 import { getPostUrlBySlug } from "@utils/url-utils";
 import PostCard from "@/components/layout/PostCard.astro";
 import { siteConfig } from "@/config";
+import "@/styles/home-archive.css";
 
 const { page } = Astro.props;
 
@@ -23,11 +24,32 @@ const initialLayoutClass =
 	defaultLayout === "grid"
 		? "post-grid-auto grid-mode"
 		: "flex flex-col gap-4 md:gap-4 list-mode";
+
+// 卷首与目录只分组当前页的真实文章，不改变排序、分页或文章地址。
+const groups = [
+	{
+		id: "home-featured",
+		title: "卷首",
+		entries: page.data.filter((entry: PostEntry) => entry.data.pinned),
+	},
+	{
+		id: "home-catalog",
+		title: "书库目录",
+		entries: page.data.filter((entry: PostEntry) => !entry.data.pinned),
+	},
+];
 ---
 
+<div class="home-archive">
+{groups.filter((group) => group.entries.length > 0).map((group) => (
+<section aria-labelledby={`${group.id}-heading`} class="archive-section">
+  <header class="archive-section-header">
+    <h2 id={`${group.id}-heading`} class="archive-section-title">{group.title}</h2>
+    <span class="archive-section-count">{group.entries.length} 篇</span>
+  </header>
 <div
-  id="post-list-container"
-  class={`transition-all duration-500 ease-in-out mb-4 ${initialLayoutClass}`}
+  id={group.id === "home-catalog" ? "post-list-container" : "home-featured"}
+  class={group.id === "home-catalog" ? `transition-all duration-500 ease-in-out mb-4 ${initialLayoutClass}` : "home-featured list-mode flex flex-col gap-4"}
   data-default-layout={defaultLayout}
   data-mobile-default-layout={mobileDefaultLayout}
   data-masonry-enabled={masonryEnabled}
@@ -35,8 +57,9 @@ const initialLayoutClass =
   style={`--post-card-min-width: ${columnWidth}px;`}
 >
   {
-    page.data.map((entry: PostEntry) => (
+    group.entries.map((entry: PostEntry) => (
       <PostCard
+        archive={true}
         entry={entry}
         title={entry.data.title}
         tags={entry.data.tags}
@@ -56,6 +79,9 @@ const initialLayoutClass =
       />
     ))
   }
+</div>
+</section>
+))}
 </div>
 
 <!-- 立即执行脚本：防止刷新时的布局闪烁 -->
@@ -326,7 +352,7 @@ const initialLayoutClass =
 <style is:global>
   .post-grid-auto {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(var(--post-card-min-width, 320px), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--post-card-min-width, 320px)), 1fr));
     gap: 1rem;
   }
 

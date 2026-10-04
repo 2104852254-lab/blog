@@ -26,6 +26,8 @@ interface Props {
 	password?: boolean;
 	style: string;
 	loading?: "lazy" | "eager";
+	/** 首页书库样稿：收敛元数据；其他调用保持原版卡片。 */
+	archive?: boolean;
 }
 const {
 	entry,
@@ -41,6 +43,7 @@ const {
 	password,
 	style,
 	loading = "lazy",
+	archive = false,
 } = Astro.props;
 const className = Astro.props.class;
 
@@ -88,8 +91,8 @@ const statsShowReadingTime = statsConfig.showReadingTime ?? true;
 
 // 标签显示位置
 const tagsPosition = siteConfig.postListLayout.tagsPosition ?? "meta";
-const showTagsInMeta = metaShowTags && tagsPosition === "meta";
-const showTagsAtBottom = metaShowTags && tagsPosition === "bottom";
+const showTagsInMeta = !archive && metaShowTags && tagsPosition === "meta";
+const showTagsAtBottom = metaShowTags && (archive || tagsPosition === "bottom");
 const descriptionClampLines = String(descriptionLines);
 const shouldClampDescription = descriptionLines > 0;
 
@@ -102,6 +105,7 @@ const minutes = remarkPluginFrontmatter.minutes;
 <div
   class:list={[
     "post-card-wrapper",
+    archive && "archive-card",
     hasCover ? "has-cover" : "no-cover",
     pinned ? "pinned" : "",
     "card-base flex flex-col-reverse w-full rounded-(--radius-large) overflow-hidden relative",
@@ -120,6 +124,7 @@ const minutes = remarkPluginFrontmatter.minutes;
       },
     ]}
   >
+    <h3 class="post-card-heading">
     <a
       href={url}
       class="post-card-title transition group w-full block font-bold mb-3 text-3xl text-90
@@ -140,6 +145,7 @@ const minutes = remarkPluginFrontmatter.minutes;
         )
       }
     </a>
+    </h3>
 
     <!-- metadata -->
     <PostMetadata
@@ -152,11 +158,11 @@ const minutes = remarkPluginFrontmatter.minutes;
       showNoTags={true}
       hideUpdateDate={true}
       category={category || undefined}
-      pinned={pinned}
+      pinned={archive ? false : pinned}
       words={words}
       minutes={minutes}
-      showWords={metaShowWords}
-      showReadingTime={metaShowReadingTime}
+      showWords={!archive && metaShowWords}
+      showReadingTime={!archive && metaShowReadingTime}
       className="mb-4 post-meta card-header-meta"
     />
 
@@ -171,7 +177,7 @@ const minutes = remarkPluginFrontmatter.minutes;
       {descriptionText}
     </div>
 
-    <!-- bottom tags（与 stats 二选一） -->
+    <!-- 首页标签用轻量文字链接；分类、日期仍由已有配置控制。 -->
     {showTagsAtBottom && tags && tags.length > 0 && (
       <div class="post-card-bottom-tags flex flex-wrap items-center gap-1.5 mt-auto pt-3">
         {(metaTagCount > 0 ? tags.slice(0, metaTagCount) : tags).map((tag) => (
@@ -189,7 +195,7 @@ const minutes = remarkPluginFrontmatter.minutes;
     )}
 
     <!-- stats（与底部标签二选一） -->
-    {!showTagsAtBottom && (statsShowPublished || statsShowWords || statsShowReadingTime) && (
+    {!archive && !showTagsAtBottom && (statsShowPublished || statsShowWords || statsShowReadingTime) && (
       <PostStats
         published={published}
         words={words}
@@ -200,6 +206,23 @@ const minutes = remarkPluginFrontmatter.minutes;
         showIcons={siteConfig.postListLayout.showStatsIcons}
         className="stats mt-auto pt-3 text-black/30 dark:text-white/30 gap-x-2"
       />
+    )}
+    {archive && (
+      <div class="archive-card-footer">
+        <PostStats
+          published={published}
+          words={words}
+          minutes={minutes}
+          showPublished={statsShowPublished && !metaShowPublished}
+          showWords={metaShowWords || statsShowWords}
+          showReadingTime={metaShowReadingTime || statsShowReadingTime}
+          showIcons={siteConfig.postListLayout.showStatsIcons}
+          className="archive-reading"
+        />
+        <a href={url} aria-label={`阅读全文：${title}`} class="archive-read-link">
+          阅读全文 <span aria-hidden="true">↗</span>
+        </a>
+      </div>
     )}
   </div>
   {
@@ -236,7 +259,7 @@ const minutes = remarkPluginFrontmatter.minutes;
           <CoverImage
             src={processedImage}
             basePath={getFileDirFromPath(entry.filePath || "")}
-            alt="Cover Image of the Post"
+            alt={archive ? title : "Cover Image of the Post"}
             class="w-full h-full transition-transform duration-300 group-hover:scale-110 group-active:scale-115"
             preview={true}
             loading={loading}
@@ -248,7 +271,7 @@ const minutes = remarkPluginFrontmatter.minutes;
             <CoverImage
               src={processedLightImage}
               basePath={getFileDirFromPath(entry.filePath || "")}
-              alt="Light theme cover image of the post"
+              alt={archive ? title : "Light theme cover image of the post"}
               class="w-full h-full transition-transform duration-300 group-hover:scale-110 group-active:scale-115"
               preview={true}
               loading={loading}
@@ -283,6 +306,10 @@ const minutes = remarkPluginFrontmatter.minutes;
 </div>
 
 <style define:vars={{ coverWidth, descriptionClampLines }}>
+  .post-card-heading {
+    margin: 0;
+    font-size: inherit;
+  }
   .description-clamped {
     display: -webkit-box;
     -webkit-box-orient: vertical;

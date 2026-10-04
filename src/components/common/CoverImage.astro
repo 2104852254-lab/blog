@@ -21,6 +21,7 @@ interface Props {
 	layout?: ResponsiveImageLayout;
 	formats?: ImageFormat[];
 	loading?: "lazy" | "eager";
+	fetchpriority?: "high" | "low" | "auto";
 	apiUrls?: string[];
 }
 
@@ -34,6 +35,7 @@ const {
 	layout = "constrained",
 	formats = getImageFormats(),
 	loading = "lazy",
+	fetchpriority = "auto",
 	apiUrls = [],
 } = Astro.props;
 
@@ -108,6 +110,7 @@ const remoteReferrerPolicy =
 			class="w-full h-full"
 			position={position}
 			loading={loading}
+			fetchpriority={fetchpriority}
 			formats={formats}
 			quality={quality}
 			layout={layout}
@@ -128,6 +131,7 @@ const remoteReferrerPolicy =
 			class={imageClass}
 			style={imageStyle}
 			loading={loading}
+			fetchpriority={fetchpriority}
 			decoding="async"
 			data-cover-img
 			data-remote="true"

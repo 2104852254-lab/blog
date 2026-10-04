@@ -50,6 +50,7 @@ import { remarkMermaid } from "./src/plugins/remark-mermaid.js";
 import { remarkPlantuml } from "./src/plugins/remark-plantuml.js";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
 import { remarkWikiLink } from "./src/plugins/remark-wiki-link.js";
+import { loadArticleEntries } from "./src/utils/article-links";
 import { collectUsedFontCssVars } from "./src/utils/fontHelper";
 
 if (process.env.NODE_ENV === "development") {
@@ -253,7 +254,14 @@ export default defineConfig({
 					: []),
 				remarkMath,
 				remarkReadingTime,
-				remarkWikiLink,
+				[
+					remarkWikiLink,
+					{
+						base: isGitHubPagesBuild ? "/blog/" : "/",
+						site: siteConfig.site_url,
+						canonicalSite: siteConfig.canonical_url,
+					},
+				],
 				remarkImageGrid,
 				remarkExcerpt,
 				remarkDirective,
@@ -311,7 +319,27 @@ export default defineConfig({
 		}),
 	},
 	vite: {
-		plugins: [tailwindcss()],
+		plugins: [
+			tailwindcss(),
+			{
+				name: "article-link-metadata-dependencies",
+				apply: "serve",
+				enforce: "pre",
+				transform(_code, id) {
+					const file = id.split("?")[0].replaceAll("\\", "/");
+					if (
+						!file.includes("/src/content/posts/") ||
+						!/\.(md|mdx)$/i.test(file)
+					) return;
+					// 开发期卡片依赖目标元数据；目标变化时让来源模块重新转换。
+					for (const article of loadArticleEntries()) {
+						if (article.filePath.replaceAll("\\", "/") !== file) {
+							this.addWatchFile(article.filePath);
+						}
+					}
+				},
+			},
+		],
 		server: {
 			watch: {
 				ignored: ["**/package/**", "**/Firefly-docs/**"],

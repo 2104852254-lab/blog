@@ -71,10 +71,44 @@ pnpm dev
 pnpm check
 pnpm type-check
 pnpm build
-node scripts/check-site.mjs
+pnpm test
 ```
 
 检查 Pages 构建时，设置 `DEPLOY_TARGET=github-pages` 后执行构建，再运行 `node scripts/check-site.mjs /blog/`。检查脚本会验证正式链接、分享信息、RSS 与站点地图，防止子路径问题再次出现。
+
+### 浏览器、性能与链接检查
+
+这些工具只用于本地和 CI，不会增加访客下载的脚本。先构建，再运行：
+
+```bash
+pnpm exec playwright install chromium
+pnpm test:browser
+pnpm audit:performance
+pnpm audit:links:local
+pnpm audit:links
+```
+
+- **浏览器检查**：桌面和手机布局、主题保存、真实搜索及失败重试、沉浸阅读进出、键盘操作，以及明暗主题的自动无障碍扫描。报告在 `playwright-report/index.html`，包含截图；自动扫描不替代人工体验检查。
+- **性能报告**：首页和平衡车文章各测三次，报告在 `reports/lighthouse/`。分数低于基线只提醒，不要求满分；保留本站原有动画。报告保存在本地或工作流附件，不上传公共报告服务。
+- **链接检查**：需要安装 [lychee 0.24.2](https://github.com/lycheeverse/lychee/releases/tag/lychee-v0.24.2)，或用 `LYCHEE_BIN` 指定其可执行文件。站内资源和锚点离线严格检查；外部引用单独报告。403、429 和超时需复核，不会当作正常链接，也不因暂时限流阻止构建。
+
+Windows PowerShell 检查 Pages 的完整路径：
+
+```powershell
+$env:DEPLOY_TARGET = "github-pages"
+pnpm build
+pnpm test
+pnpm test:browser
+pnpm audit:links:local
+pnpm audit:performance
+Remove-Item Env:DEPLOY_TARGET
+```
+
+切回 Vercel 根路径时，重新执行 `pnpm build`。不要对根路径产物运行 `/blog/` 测试，反之亦然。浏览器与性能检查会分别临时使用本地端口 4175、4176；若端口被占用，先关闭对应预览。
+
+性能工具默认使用 Playwright 安装的 Chromium。Windows 如无法启动完整浏览器，可将 `CHROME_PATH` 指向 Playwright 安装的 `chrome-headless-shell.exe`；无需改网站代码。
+
+推送后，**Build and Check** 工作流会分别检查 Vercel 与 Pages，并保留检查报告 14 天。新增检查与现有部署工作流独立运行，不会在本地自动上传。
 
 ## 致谢与许可
 
@@ -85,3 +119,7 @@ node scripts/check-site.mjs
 导航栏与浏览器标签的火焰图标来自 Google [Material Symbols](https://github.com/google/material-design-icons) 的 `local-fire-department-rounded`，仅调整配色；遵循 [Apache-2.0](./public/favicon/LICENSE-material-symbols.txt)。
 
 本站的“余烬书库”视觉、文字和主题图片为本项目使用的原创内容；未使用任何游戏官方角色、商标或场景素材。
+
+## 写作工具
+
+VSCode Front Matter 元数据表单、新文章草稿流程和可编辑 Excalidraw 调试图模板，见[写作指南](./writing/README.md)。原有文章地址与自定义元数据无需迁移。

@@ -37,11 +37,12 @@ if (footerConfig.enable) {
 <div
   class="transition border-dashed border-[oklch(85%_0.01_var(--hue))] dark:border-white/15 rounded-2xl mb-12 flex flex-col items-center justify-center px-6"
 >
-  <div class="transition text-50 text-sm text-center wrap">
+  <!-- 用主题元信息实色，避免亮色主题半透明黑字对比度不足。 -->
+  <div class="transition text-(--content-meta) text-sm text-center wrap">
     <div class="mb-2">
       {customFooterHtml && <div set:html={customFooterHtml} />}
     </div>
-    <div class="m-0.5 flex gap-2 justify-center flex-wrap">
+    <div class="m-0.5 min-h-8 flex items-center gap-2 justify-center flex-wrap">
       &copy; <span id="copyright-year">{currentYear}</span>
       {profileConfig.name}. All Rights Reserved.
       <span aria-hidden="true">/</span>
@@ -57,7 +58,7 @@ if (footerConfig.enable) {
         href={url("sitemap-index.xml")}>Sitemap</a
       >
     </div>
-    <div class="m-0.5 flex gap-2 justify-center flex-wrap">
+    <div class="m-0.5 min-h-8 flex items-center gap-2 justify-center flex-wrap">
       <span>Powered by</span>
       <a
         class="transition link text-(--primary) font-medium"

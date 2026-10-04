@@ -3,153 +3,21 @@
  * @author CuteLeaf <xiaye@msn.com>
  */
 
-import { readFileSync, statSync } from "node:fs";
+import { statSync } from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { slug } from "github-slugger";
-import matter from "gray-matter";
+import {
+	createArticleLinkIndex,
+	loadArticleEntries,
+	parseWikiLinkValue,
+	withArticleBase,
+} from "../utils/article-links";
 import { getApiUrlList, processCoverImageSync } from "../utils/image-utils";
 
-const POSTS_DIR = fileURLToPath(new URL("../content/posts/", import.meta.url));
 const MARKDOWN_EXTENSION = /\.(?:md|mdx|markdown)$/i;
 const WIKI_LINK = /!?\[\[([^[\]\n]+)\]\]/g;
 const STANDALONE_WIKI_LINK = /^\[\[([^[\]\n]+)\]\]$/;
-const SKIPPED_NODE_TYPES = new Set([
-	"link",
-	"linkReference",
-	"mdxJsxFlowElement",
-	"mdxJsxTextElement",
-]);
-
-const frontmatterCache = new Map();
-
-function normalizeContentPath(value) {
-	const contentPath = value
-		.trim()
-		.replaceAll("\\", "/")
-		.replace(/^\.?\//, "")
-		.replace(/\/+$/, "")
-		.replace(MARKDOWN_EXTENSION, "");
-	const segments = contentPath.split("/").filter(Boolean);
-
-	if (
-		segments.length === 0 ||
-		segments.some((segment) => segment === "." || segment === "..")
-	) {
-		return "";
-	}
-
-	const withoutPrefix = segments[0] === "posts" ? segments.slice(1) : segments;
-
-	return withoutPrefix.length > 0 ? withoutPrefix.join("/") : "";
-}
-
-function createPostUrl(contentPath) {
-	const segments = contentPath.split("/");
-
-	if (segments.at(-1)?.toLowerCase() === "index") {
-		segments.pop();
-	}
-
-	const encodedPath = segments
-		.map((segment) => encodeURIComponent(segment))
-		.join("/");
-
-	return `/posts/${encodedPath ? `${encodedPath}/` : ""}`;
-}
-
-function readPostMeta(contentPath) {
-	// 优先按 frontmatter slug 匹配
-	const bySlug = findMetaBySlug(contentPath);
-	if (bySlug) return bySlug;
-
-	// 其次按文件路径匹配
-	const candidates = [
-		`${contentPath}.md`,
-		`${contentPath}.mdx`,
-		`${contentPath}.markdown`,
-		`${contentPath}/index.md`,
-		`${contentPath}/index.mdx`,
-	];
-
-	for (const candidate of candidates) {
-		const filePath = path.join(POSTS_DIR, candidate);
-		let stats;
-		try {
-			stats = statSync(filePath);
-		} catch {
-			continue;
-		}
-		if (!stats.isFile()) {
-			continue;
-		}
-
-		const cached = frontmatterCache.get(filePath);
-		if (cached && cached.mtimeMs === stats.mtimeMs) {
-			return cached.meta;
-		}
-
-		let data;
-		try {
-			data = matter(readFileSync(filePath, "utf8")).data ?? {};
-		} catch {
-			return null;
-		}
-
-		const meta = { filePath, data };
-		frontmatterCache.set(filePath, { mtimeMs: stats.mtimeMs, meta });
-		return meta;
-	}
-
-	return null;
-}
-
-function findMetaBySlug(targetSlug) {
-	const exts = [".md", ".mdx", ".markdown"];
-
-	function walk(dir) {
-		let entries;
-		try {
-			entries = fs.readdirSync(dir, { withFileTypes: true });
-		} catch {
-			return null;
-		}
-		for (const entry of entries) {
-			const fullPath = path.join(dir, entry.name);
-			if (entry.isDirectory()) {
-				const found = walk(fullPath);
-				if (found) return found;
-			} else if (exts.some((ext) => entry.name.endsWith(ext))) {
-				let stats;
-				try {
-					stats = statSync(fullPath);
-				} catch {
-					continue;
-				}
-
-				const cached = frontmatterCache.get(fullPath);
-				if (cached && cached.mtimeMs === stats.mtimeMs) {
-					if (cached.meta.data.slug === targetSlug) return cached.meta;
-					continue;
-				}
-
-				let data;
-				try {
-					data = matter(readFileSync(fullPath, "utf8")).data ?? {};
-				} catch {
-					continue;
-				}
-
-				const meta = { filePath: fullPath, data };
-				frontmatterCache.set(fullPath, { mtimeMs: stats.mtimeMs, meta });
-				if (data.slug === targetSlug) return meta;
-			}
-		}
-		return null;
-	}
-
-	return walk(POSTS_DIR);
-}
+const SKIPPED_NODE_TYPES = new Set(["link", "linkReference"]);
 
 function formatPublishedDate(value) {
 	if (value instanceof Date && !Number.isNaN(value.getTime())) {
@@ -211,7 +79,7 @@ function createCoverNode(meta, parsed, context) {
 
 	// 外链或 public 目录下的封面：直接输出 img，不经过构建期图片管线
 	if (/^(?:https?:)?\/\//i.test(image) || image.startsWith("/")) {
-		return createRemoteCoverImg(image);
+		return createRemoteCoverImg(withArticleBase(image, context.base));
 	}
 
 	if (!context.currentDir) {
@@ -243,36 +111,6 @@ function createCoverNode(meta, parsed, context) {
 	};
 }
 
-function parseWikiLinkValue(value) {
-	const aliasSeparator = value.indexOf("|");
-	const destination = (
-		aliasSeparator === -1 ? value : value.slice(0, aliasSeparator)
-	).trim();
-	const alias =
-		aliasSeparator === -1 ? "" : value.slice(aliasSeparator + 1).trim();
-
-	if (!destination) {
-		return null;
-	}
-
-	const headingSeparator = destination.indexOf("#");
-	const pageName =
-		headingSeparator === -1
-			? destination
-			: destination.slice(0, headingSeparator).trim();
-	const heading =
-		headingSeparator === -1
-			? ""
-			: destination.slice(headingSeparator + 1).trim();
-	const contentPath = pageName ? normalizeContentPath(pageName) : "";
-
-	if ((pageName && !contentPath) || (!contentPath && !heading)) {
-		return null;
-	}
-
-	return { destination, alias, contentPath, heading };
-}
-
 function createElement(tagName, properties, children) {
 	return {
 		type: "paragraph",
@@ -286,7 +124,7 @@ function createText(value) {
 }
 
 function createWikiLinkCard(parsed, context) {
-	const meta = readPostMeta(parsed.contentPath);
+	const meta = context.index.resolve(parsed.contentPath);
 	if (!meta) {
 		return null;
 	}
@@ -295,10 +133,8 @@ function createWikiLinkCard(parsed, context) {
 		typeof meta.data.title === "string" && meta.data.title
 			? meta.data.title
 			: parsed.contentPath;
-	const encrypted =
-		typeof meta.data.password === "string" && meta.data.password.length > 0;
 	const description =
-		!encrypted && typeof meta.data.description === "string"
+		typeof meta.data.description === "string"
 			? meta.data.description.trim()
 			: "";
 	const published = formatPublishedDate(meta.data.published);
@@ -357,19 +193,23 @@ function createWikiLinkCard(parsed, context) {
 		"a",
 		{
 			class: "card-wiki-link no-styling",
-			href: createPostUrl(parsed.contentPath),
+			href: meta.url,
 		},
 		children,
 	);
 }
 
-function createWikiLink(value) {
+function createWikiLink(value, context) {
 	const parsed = parseWikiLinkValue(value);
 	if (!parsed) {
 		return null;
 	}
 
-	const meta = parsed.contentPath ? readPostMeta(parsed.contentPath) : null;
+	const meta = parsed.contentPath
+		? context.index.resolve(parsed.contentPath)
+		: null;
+	// 未解析或非公开目标保留原文，不生成死链接或泄露元数据。
+	if (parsed.contentPath && !meta) return null;
 	const title =
 		typeof meta?.data.title === "string" && meta.data.title
 			? meta.data.title
@@ -386,7 +226,7 @@ function createWikiLink(value) {
 		}
 	}
 
-	const pageUrl = parsed.contentPath ? createPostUrl(parsed.contentPath) : "";
+	const pageUrl = meta?.url || "";
 	const url = `${pageUrl}${parsed.heading ? `#${slug(parsed.heading)}` : ""}`;
 
 	return {
@@ -396,7 +236,7 @@ function createWikiLink(value) {
 	};
 }
 
-function replaceWikiLinks(value) {
+function replaceWikiLinks(value, context) {
 	const children = [];
 	let cursor = 0;
 	let changed = false;
@@ -406,7 +246,7 @@ function replaceWikiLinks(value) {
 			continue;
 		}
 
-		const link = createWikiLink(match[1]);
+		const link = createWikiLink(match[1], context);
 		if (!link) {
 			continue;
 		}
@@ -461,6 +301,29 @@ function transformNode(node, context) {
 
 	for (let index = 0; index < node.children.length; index++) {
 		const child = node.children[index];
+		if (child.type === "link" || child.type === "linkReference") {
+			const definition =
+				child.type === "linkReference"
+					? context.definitions.get(child.identifier.toLowerCase())
+					: null;
+			const target = child.type === "link" ? child.url : definition?.url;
+			if (target) {
+				const article = context.index.resolve(target, context.sourceId);
+				if (article) {
+					// 只改写已识别的文章；锚点和查询保留作者原意，图片定义不受影响。
+					node.children[index] = {
+						type: "link",
+						url: article.url + (target.match(/[?#].*$/)?.[0] || ""),
+						title: child.title ?? definition?.title,
+						children: child.children,
+					};
+				} else if (context.index.isPrivateTarget(target, context.sourceId)) {
+					node.children.splice(index, 1, ...child.children);
+					index += child.children.length - 1;
+				}
+			}
+			continue;
+		}
 
 		const card = tryCreateCardFromParagraph(child, context);
 		if (card) {
@@ -469,7 +332,7 @@ function transformNode(node, context) {
 		}
 
 		if (child.type === "text") {
-			const replacement = replaceWikiLinks(child.value);
+			const replacement = replaceWikiLinks(child.value, context);
 			if (replacement) {
 				node.children.splice(index, 1, ...replacement);
 				index += replacement.length - 1;
@@ -489,10 +352,38 @@ function transformNode(node, context) {
  * - Inline `[[slug]]` becomes a normal link whose text is the post title.
  * - `[[slug|alias]]` and `[[slug#heading]]` always render as normal links.
  */
-export function remarkWikiLink() {
+export function remarkWikiLink(options = {}) {
 	return (tree, file) => {
+		const entries = options.entries ?? loadArticleEntries();
+		const sourceId = entries.find(
+			(entry) =>
+				entry.filePath &&
+				file?.path &&
+				path.resolve(entry.filePath) === path.resolve(file.path),
+		)?.id;
+		const definitions = new Map();
+		function collectDefinitions(node) {
+			if (
+				node.type === "definition" &&
+				!definitions.has(node.identifier.toLowerCase())
+			)
+				definitions.set(node.identifier.toLowerCase(), node);
+			for (const child of node.children || []) collectDefinitions(child);
+		}
+		collectDefinitions(tree);
+		const base =
+			options.base ??
+			(process.env.DEPLOY_TARGET === "github-pages" ? "/blog/" : "/");
 		const context = {
 			currentDir: file?.path ? path.dirname(file.path) : null,
+			base,
+			sourceId,
+			definitions,
+			index: createArticleLinkIndex(entries, {
+				base,
+				site: options.site,
+				canonicalSite: options.canonicalSite,
+			}),
 		};
 		transformNode(tree, context);
 	};

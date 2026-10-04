@@ -1,0 +1,47 @@
+{
+	"$schema": "https://frontmatter.codes/frontmatter.schema.json",
+	"frontMatter.framework.id": "astro",
+	"frontMatter.framework.startCommand": "pnpm dev",
+	"frontMatter.preview.host": "http://localhost:4321",
+	"frontMatter.preview.pathName": "/posts",
+	"frontMatter.content.pageFolders": [
+		{
+			"title": "文章",
+			"path": "[[workspace]]/src/content/posts",
+			"contentTypes": ["default"],
+			"filePrefix": ""
+		}
+	],
+	"frontMatter.content.publicFolder": {
+		"path": "src/assets/images",
+		"relative": true
+	},
+	"frontMatter.content.draftField": { "name": "draft", "type": "boolean" },
+	"frontMatter.content.autoUpdateDate": false,
+	"frontMatter.taxonomy.alignFilename": false,
+	"frontMatter.panel.actions.disabled": ["optimizeSlug"],
+	"frontMatter.taxonomy.dateFormat": "yyyy-MM-dd",
+	"frontMatter.taxonomy.noPropertyValueQuotes": ["published", "updated"],
+	"frontMatter.taxonomy.quoteStringValues": true,
+	"frontMatter.global.timezone": "Asia/Shanghai",
+	"frontMatter.git.enabled": false,
+	"frontMatter.taxonomy.contentTypes": [
+		{
+			"name": "default",
+			"pageBundle": false,
+			"clearEmpty": false,
+			"fields": [
+				{ "title": "标题", "name": "title", "type": "string", "single": true, "required": true, "default": "{{title}}" },
+				{ "title": "发布日期", "name": "published", "type": "datetime", "isPublishDate": true, "dateFormat": "yyyy-MM-dd", "required": true, "default": "{{now}}" },
+				{ "title": "摘要", "name": "description", "type": "string", "default": "" },
+				{ "title": "深色封面", "name": "image", "type": "image", "isPreviewImage": true, "default": "", "description": "相对当前文章的源文件路径，例如 ../../assets/images/posts/cover.jpg" },
+				{ "title": "浅色封面", "name": "lightImage", "type": "image", "default": "", "description": "可留空，沿用深色封面；填写相对当前文章的源文件路径" },
+				{ "title": "分类", "name": "category", "type": "string", "single": true, "default": "", "description": "一个分类名称，不是数组" },
+				{ "title": "标签", "name": "tags", "type": "tags", "default": [], "singleValueAsString": false },
+				{ "title": "草稿", "name": "draft", "type": "draft", "default": true },
+				{ "title": "作者", "name": "author", "type": "string", "single": true, "default": "守夜人" },
+				{ "name": "slug", "type": "string", "hidden": true, "default": "{{slug}}", "description": "已有文章的 URL 标识，请勿重算或删除" }
+			]
+		}
+	]
+}

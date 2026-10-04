@@ -1,0 +1,209 @@
+/* 首页书库排版：复用现有主题变量和动画，不影响正文或侧栏。 */
+.home-archive {
+	min-width: 0;
+}
+
+.home-archive .archive-section + .archive-section {
+	margin-top: 2rem;
+}
+
+.home-archive .archive-section-header {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 1rem;
+	margin: 0 0.25rem 1rem;
+	padding: 0.5rem 0 0.75rem;
+	border-bottom: 1px solid var(--line-divider);
+}
+
+.home-archive .archive-section-title {
+	margin: 0;
+	color: var(--deep-text);
+	font-size: 1.25rem;
+	font-weight: 500;
+	letter-spacing: 0.14em;
+}
+
+.home-archive .archive-section-count {
+	color: var(--content-meta);
+	font-size: 0.75rem;
+	white-space: nowrap;
+}
+
+.home-archive .archive-card {
+	min-width: 0;
+}
+
+/* 元数据不用缩放，避免窄屏文字和点击区域过小。 */
+.home-archive .archive-card .post-meta-root.card-header-meta {
+	transform: none !important;
+	width: auto !important;
+	gap: 0.5rem 1rem !important;
+	margin-bottom: 1rem !important;
+}
+
+.home-archive .archive-card .meta-icon {
+	display: none;
+}
+
+.home-archive .archive-card .post-meta .text-sm {
+	font-size: 0.75rem !important;
+	line-height: 1.5 !important;
+}
+
+.home-archive .archive-card .post-card-title {
+	font-weight: 500;
+	text-wrap: pretty;
+	overflow-wrap: anywhere;
+}
+
+.home-archive .archive-card .post-card-title::before {
+	display: none !important;
+}
+
+.home-archive .archive-card .description {
+	color: var(--content-meta);
+	font-size: 0.875rem;
+	line-height: 1.9;
+}
+
+.home-archive .archive-card .post-card-bottom-tags {
+	margin-top: 0.875rem;
+	padding-top: 0;
+	gap: 0.125rem 0.625rem;
+}
+
+.home-archive .archive-card .post-card-bottom-tags a {
+	display: inline-flex;
+	align-items: center;
+	min-height: 1.75rem;
+	padding: 0;
+	border-radius: 0;
+	background: transparent;
+	color: var(--content-meta);
+	font-size: 0.75rem;
+}
+
+.home-archive .archive-card .post-card-bottom-tags a:hover {
+	color: var(--primary);
+}
+
+.home-archive .archive-card-footer {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem 1rem;
+	margin-top: 0.75rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--line-divider);
+	color: var(--content-meta);
+}
+
+.home-archive .archive-read-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	min-height: 1.75rem;
+	color: var(--primary);
+	font-size: 0.8125rem;
+}
+
+.home-archive .archive-read-link:hover {
+	text-decoration: underline;
+	text-underline-offset: 0.3em;
+}
+
+/* 较强的书脊留给卷首，目录只保留现有细边框与悬停动画。 */
+.home-archive #post-list-container .archive-card::after {
+	display: none;
+}
+
+.home-archive .archive-card .post-card-image:focus-visible {
+	outline-offset: -4px;
+}
+
+/* 首页封面等比放大并裁切填满统一图片框，不拉伸，也不影响正文封面。 */
+.home-archive .archive-card .post-card-image {
+	background: var(--card-bg);
+}
+
+.home-archive .archive-card .post-card-image img[data-cover-img] {
+	width: 100% !important;
+	height: 100% !important;
+	max-width: none !important;
+	max-height: none !important;
+	object-fit: cover !important;
+}
+
+@media (min-width: 768px) {
+	/* 卷首和目录列表共用同宽、方形的封面框，长摘要不再拉伸图片区域。 */
+	.home-archive .archive-section :is(#home-featured, #post-list-container.list-mode) .archive-card.has-cover .post-card-content {
+		width: calc(100% - var(--coverWidth) - 2rem) !important;
+	}
+
+	.home-archive .archive-section :is(#home-featured, #post-list-container.list-mode) .archive-card.has-cover .post-card-image {
+		position: relative !important;
+		inset: auto !important;
+		flex: none;
+		align-self: center;
+		width: var(--coverWidth) !important;
+		height: auto !important;
+		aspect-ratio: 1 !important;
+		margin: 1rem !important;
+		border-radius: 0.75rem !important;
+	}
+
+	.home-archive #home-featured .archive-card {
+		min-height: 19rem;
+	}
+
+	.home-archive #home-featured .archive-card .post-card-content {
+		padding: 2rem !important;
+	}
+
+	.home-archive #home-featured .archive-card .post-card-title {
+		font-size: clamp(1.5rem, 2vw, 1.875rem) !important;
+		line-height: 1.5 !important;
+		margin-bottom: 1rem !important;
+	}
+
+	.home-archive #home-featured .archive-card.no-cover .post-card-content {
+		width: calc(100% - 4rem) !important;
+	}
+
+	.home-archive #post-list-container .archive-card .post-card-content {
+		padding: 1.75rem 1.25rem 1.75rem 1.75rem !important;
+	}
+}
+
+@media (max-width: 767px) {
+	/* 即使访客保存了列表偏好，手机首页也不让右侧图片挤窄标题。 */
+	.home-archive .archive-section :is(#home-featured, #post-list-container) .archive-card.post-card-wrapper {
+		flex-direction: column-reverse !important;
+	}
+
+	.home-archive .archive-section :is(#home-featured, #post-list-container) .archive-card .post-card-content {
+		width: 100% !important;
+		padding: 1.25rem !important;
+	}
+
+	.home-archive .archive-section :is(#home-featured, #post-list-container) .archive-card .post-card-image {
+		position: relative !important;
+		inset: auto !important;
+		width: 100% !important;
+		aspect-ratio: 16 / 10 !important;
+		border-radius: 0 !important;
+	}
+
+	.home-archive .archive-section :is(#home-featured, #post-list-container) .archive-card .post-card-title {
+		font-size: 1.375rem !important;
+		line-height: 1.6 !important;
+		margin-bottom: 0.75rem !important;
+	}
+
+	.home-archive .archive-section :is(#home-featured, #post-list-container) .archive-card.no-cover .post-card-content {
+		padding-right: 4rem !important;
+	}
+}

@@ -6,10 +6,10 @@ interface Props {
 }
 const { badge, url, label } = Astro.props;
 ---
-<a href={url} aria-label={label}>
-    <button
+<!-- 导航只保留一个链接；嵌套 button 会造成重复的键盘焦点。 -->
+<a href={url} aria-label={label}
         class:list={`
-            w-full
+            flex items-center w-full
             h-10
             rounded-lg
             bg-none
@@ -26,10 +26,11 @@ const { badge, url, label } = Astro.props;
         `
         }
     >
-        <div class="flex items-center justify-between relative mr-2">
+        <div class="w-full flex items-center justify-between relative mr-2">
             <div class="overflow-hidden text-left whitespace-nowrap text-ellipsis  ">
                 <slot></slot>
             </div>
+            {" "}
             { badge !== undefined && badge !== null && badge !== '' &&
                 <div class="transition px-2 h-7 ml-4 min-w-8 rounded-lg text-sm font-bold
                     text-(--btn-content) dark:text-(--deep-text)
@@ -39,5 +40,4 @@ const { badge, url, label } = Astro.props;
                 </div>
             }
         </div>
-    </button>
 </a>

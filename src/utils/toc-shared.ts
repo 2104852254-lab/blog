@@ -114,12 +114,12 @@ export function renderBadgeInnerHTML(item: TocItem): string {
  */
 export function renderTocItemHTML(item: TocItem): string {
 	const escaped = escapeHtmlAttr(item.text);
+	// 链接名称由可见的编号和标题共同生成，不用 aria-label 覆盖掉编号。
 	return `
         <a
           href="${item.href}"
 		  class="toc-item toc-level-${item.depthLevel}"
           data-heading-id="${item.headingId}"
-		  aria-label="${escaped}"
 		  title="${escaped}"
         >
 			  <div class="toc-badge ${item.badgeKind === "index" ? "toc-badge-index" : ""}">

@@ -1,0 +1,30 @@
+---
+import type { ArticleBacklink } from "@/utils/article-links";
+
+interface Props {
+	backlinks: ArticleBacklink[];
+}
+
+const { backlinks } = Astro.props;
+---
+
+{backlinks.length > 0 && (
+	<section
+		aria-label="引用本文的文章"
+		data-article-backlinks
+		class="card-base p-6 mb-4 onload-animation"
+	>
+		<h2 class="text-base font-bold text-black/75 dark:text-white/75 mb-3">
+			引用本文的文章
+		</h2>
+		<ul class="flex flex-col gap-2 text-sm">
+			{backlinks.map((article) => (
+				<li>
+					<a href={article.url} class="text-(--primary) hover:underline">
+						{article.title}
+					</a>
+				</li>
+			))}
+		</ul>
+	</section>
+)}
