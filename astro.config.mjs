@@ -319,6 +319,10 @@ export default defineConfig({
 		}),
 	},
 	vite: {
+		// 站点配置同时用于 Node 和浏览器，只注入公开的部署标签。
+		define: {
+			"process.env.DEPLOY_TARGET": JSON.stringify(process.env.DEPLOY_TARGET ?? ""),
+		},
 		plugins: [
 			tailwindcss(),
 			{
